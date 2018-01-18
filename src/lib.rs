@@ -30,7 +30,7 @@
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
 //!     // return the event without doing anything with it
-//!     Ok(Response { ..Default::default() })
+//!     Ok(gateway::Response { ..Default::default() })
 //! });
 //! # }
 //! ```
@@ -131,13 +131,13 @@ where
 }
 
 /// Result type for api gateway requests
-pub type GatewatResult = Result<Response, Box<std::error::Error>>;
+pub type GatewayResult = Result<Response, Box<std::error::Error>>;
 
 // wrap crowbar handler in gateway handler
 #[doc(hidden)]
 pub fn handler<F>(py: Python, f: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
 where
-    F: FnOnce(Request, LambdaContext) -> GatewatResult,
+    F: FnOnce(Request, LambdaContext) -> GatewayResult,
 {
     crowbar::handler(
         py,
@@ -178,7 +178,7 @@ where
 /// # fn main() {
 /// gateway!(|request, context| {
 ///     println!("{:?}", request);
-///     Ok(Response { status_code: 200, ..Default::default() })
+///     Ok(gateway::Response { status_code: 200, ..Default::default() })
 /// });
 /// # }
 /// ```
@@ -189,10 +189,10 @@ where
 /// # #[macro_use(gateway)] extern crate gateway;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// use gateway::{Request, LambdaContext, LambdaResult};
+/// use gateway::{Request, Response, LambdaContext, GatewayResult};
 ///
 /// fn my_handler(event: Request, context: LambdaContext) -> GatewayResult {
-///     println!("{:?}", request);
+///     println!("{:?}", event);
 ///      Ok(Response { status_code: 200, ..Default::default() })
 /// }
 ///
@@ -208,9 +208,9 @@ where
 /// # #[macro_use(gateway)] extern crate gateway;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// lambda! {
-///     "one" => |event, context| { Ok(Response { ..Default::default() }) },
-///     "two" => |event, context| { Ok(Response { ..Default::default() }) },
+/// gateway! {
+///     "one" => |event, context| { Ok(gateway::Response { ..Default::default() }) },
+///     "two" => |event, context| { Ok(gateway::Response { ..Default::default() }) },
 /// };
 /// # }
 /// ```
@@ -230,12 +230,12 @@ where
 /// upon the multiple handler version of `gateway!`:
 ///
 /// ```rust
-/// # #[macro_use(lambda)] extern crate crowbar;
+/// # #[macro_use(gateway)] extern crate gateway;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway! {
 ///     crate (libkappa, initlibkappa, PyInit_libkappa) {
-///         "handler" => |event, context| { Ok(Response { body: "hi from libkappa".into(), ..Default::default() }) }
+///         "handler" => |event, context| { Ok(gateway::Response { body: "hi from libkappa".into(), ..Default::default() }) }
 ///     }
 /// };
 /// # }
