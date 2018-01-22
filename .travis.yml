@@ -14,7 +14,6 @@ matrix:
 script:
 - RUSTFLAGS="$RUSTFLAGS -C link-dead-code" cargo test
 
-
 before_cache:
   # Travis can't cache files that are not readable by "others"
   - chmod -R a+r $HOME/.cargo
