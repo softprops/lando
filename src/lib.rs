@@ -84,131 +84,16 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use std::ops::Not;
-use std::collections::HashMap;
-
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
 use cpython::Python;
 pub use crowbar::LambdaContext;
-use serde::{Deserialize, Deserializer};
 
-/// representation of API Gateway proxy event data
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Request {
-    pub resource: String,
-    pub path: String,
-    pub http_method: String,
-    pub headers: HashMap<String, String>,
-    #[serde(deserialize_with = "nullable_map")]
-    pub query_string_parameters: HashMap<String, String>,
-    #[serde(deserialize_with = "nullable_map")]
-    pub path_parameters: HashMap<String, String>,
-    #[serde(deserialize_with = "nullable_map")]
-    pub stage_variables: HashMap<String, String>,
-    pub body: Option<String>,
-    pub is_base64_encoded: bool,
-    pub request_context: Context,
-}
+pub mod response;
+pub mod request;
 
-/// API gateway Request context
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Context {
-    pub path: String,
-    pub account_id: String,
-    pub resource_id: String,
-    pub stage: String,
-    pub request_id: String,
-    pub api_id: String,
-}
-
-/// representation of API Gateway response
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Response {
-    pub status_code: u16,
-    pub headers: HashMap<String, String>,
-    pub body: String,
-    #[serde(skip_serializing_if = "Not::not")]
-    pub is_base64_encoded: bool,
-}
-
-impl Default for Response {
-    fn default() -> Self {
-        Response::builder().build()
-    }
-}
-
-impl Response {
-    pub fn builder() -> ResponseBuilder {
-        ResponseBuilder::new()
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct ResponseBuilder {
-    pub status_code: u16,
-    pub headers: HashMap<String, String>,
-    pub body: String,
-    pub is_base64_encoded: bool,
-}
-
-impl ResponseBuilder {
-    pub fn new() -> Self {
-        ResponseBuilder {
-            status_code: 200,
-            ..Default::default()
-        }
-    }
-
-    pub fn status_code(&mut self, c: u16) -> &mut Self {
-        self.status_code = c;
-        self
-    }
-
-    pub fn body<B>(&mut self, b: B) -> &mut Self
-    where
-        B: Into<String>,
-    {
-        self.body = b.into();
-        self
-    }
-
-    pub fn header<K, V>(&mut self, k: K, v: V) -> &mut Self
-    where
-        K: Into<String>,
-        V: Into<String>,
-    {
-        self.headers.insert(k.into(), v.into());
-        self
-    }
-
-    pub fn is_base64_encoded(&mut self, is: bool) -> &mut Self {
-        self.is_base64_encoded = is;
-        self
-    }
-
-    pub fn build(self) -> Response {
-        Response {
-            status_code: self.status_code,
-            headers: self.headers,
-            body: self.body,
-            is_base64_encoded: self.is_base64_encoded,
-        }
-    }
-}
-
-/// deserializes (json) null values to empty hashmap
-// https://github.com/serde-rs/serde/issues/1098
-fn nullable_map<'de, D>(deserializer: D) -> Result<HashMap<String, String>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let opt = Option::deserialize(deserializer)?;
-    Ok(opt.unwrap_or_else(|| Default::default()))
-}
+pub use response::Response;
+pub use request::Request;
 
 /// Result type for API Gateway requests
 pub type GatewayResult = Result<Response, Box<std::error::Error>>;
@@ -318,7 +203,7 @@ where
 ///         "handler" => |request, context| {
 ///            Ok(gateway::Response::builder().body(
 ///               "hi from libkappa"
-///            ))
+///            ).build())
 ///         }
 ///     }
 /// };
