@@ -1,6 +1,9 @@
-//! gateway extends the crowbar crate makes it easy to write AWS Lambda functions in Rust that are invoked
-//! on api gateway events. It wraps native Rust functions
-//! into CPython modules that handle converting Python objects into Rust objects and back again.
+//! gateway extends the [crowbar](https://crates.io/crates/crowbar) crate makes
+//! it possible to write type safe AWS Lambda functions in Rust that are invoked
+//! on [API gateway](https://aws.amazon.com/api-gateway/) events.
+//! It exports native Rust functions
+//! as CPython modules that handle converting Python objects into Rust
+//! objects and back again.
 //!
 //! # Usage
 //!
