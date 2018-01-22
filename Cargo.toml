@@ -1,7 +1,14 @@
 [package]
 name = "gateway"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["softprops <d.tangren@gmail.com>"]
+description = "Rust interface lambda API gateway events"
+documentation = "https://softprops.github.io/gateway"
+homepage = "https://github.com/softprops/gateway"
+repository = "https://github.com/softprops/gateway"
+keywords = ["serverless", "aws", "lambda"]
+license = "MIT"
+readme = "README.md"
 
 [dependencies]
 crowbar = "0.2"

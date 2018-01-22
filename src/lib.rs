@@ -35,7 +35,7 @@
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
-//!     Ok(gateway::Response { ..Default::default() })
+//!     Ok(gateway::Response::default())
 //! });
 //! # }
 //! ```
@@ -87,29 +87,33 @@ extern crate serde_json;
 use std::ops::Not;
 use std::collections::HashMap;
 
-use serde::{Deserialize, Deserializer};
-pub use crowbar::LambdaContext;
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
 use cpython::Python;
+pub use crowbar::LambdaContext;
+use serde::{Deserialize, Deserializer};
 
-#[derive(Deserialize, Debug, Default)]
+/// representation of API Gateway proxy event data
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
+    pub resource: String,
     pub path: String,
-    #[serde(rename = "httpMethod")]
-    pub method: String,
+    pub http_method: String,
     pub headers: HashMap<String, String>,
-    #[serde(rename = "queryStringParameters", deserialize_with = "nullable_map")]
-    pub query_params: HashMap<String, String>,
-    #[serde(rename = "pathParameters", deserialize_with = "nullable_map")]
-    pub path_params: HashMap<String, String>,
+    #[serde(deserialize_with = "nullable_map")]
+    pub query_string_parameters: HashMap<String, String>,
+    #[serde(deserialize_with = "nullable_map")]
+    pub path_parameters: HashMap<String, String>,
+    #[serde(deserialize_with = "nullable_map")]
+    pub stage_variables: HashMap<String, String>,
     pub body: Option<String>,
     pub is_base64_encoded: bool,
     pub request_context: Context,
 }
 
-#[derive(Deserialize, Debug, Default)]
+/// API gateway Request context
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Context {
     pub path: String,
@@ -120,14 +124,80 @@ pub struct Context {
     pub api_id: String,
 }
 
-#[derive(Serialize, Debug, Default)]
+/// representation of API Gateway response
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Response {
-    #[serde(rename = "statusCode")]
     pub status_code: u16,
     pub headers: HashMap<String, String>,
     pub body: String,
-    #[serde(rename = "isBase64Encoded", skip_serializing_if = "Not::not")]
-    pub is_bas64_encoded: bool,
+    #[serde(skip_serializing_if = "Not::not")]
+    pub is_base64_encoded: bool,
+}
+
+impl Default for Response {
+    fn default() -> Self {
+        Response::builder().build()
+    }
+}
+
+impl Response {
+    pub fn builder() -> ResponseBuilder {
+        ResponseBuilder::new()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ResponseBuilder {
+    pub status_code: u16,
+    pub headers: HashMap<String, String>,
+    pub body: String,
+    pub is_base64_encoded: bool,
+}
+
+impl ResponseBuilder {
+    pub fn new() -> Self {
+        ResponseBuilder {
+            status_code: 200,
+            ..Default::default()
+        }
+    }
+
+    pub fn status_code(&mut self, c: u16) -> &mut Self {
+        self.status_code = c;
+        self
+    }
+
+    pub fn body<B>(&mut self, b: B) -> &mut Self
+    where
+        B: Into<String>,
+    {
+        self.body = b.into();
+        self
+    }
+
+    pub fn header<K, V>(&mut self, k: K, v: V) -> &mut Self
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
+        self.headers.insert(k.into(), v.into());
+        self
+    }
+
+    pub fn is_base64_encoded(&mut self, is: bool) -> &mut Self {
+        self.is_base64_encoded = is;
+        self
+    }
+
+    pub fn build(self) -> Response {
+        Response {
+            status_code: self.status_code,
+            headers: self.headers,
+            body: self.body,
+            is_base64_encoded: self.is_base64_encoded,
+        }
+    }
 }
 
 /// deserializes (json) null values to empty hashmap
@@ -140,7 +210,7 @@ where
     Ok(opt.unwrap_or_else(|| Default::default()))
 }
 
-/// Result type for api gateway requests
+/// Result type for API Gateway requests
 pub type GatewayResult = Result<Response, Box<std::error::Error>>;
 
 // wrap crowbar handler in gateway handler
@@ -188,7 +258,7 @@ where
 /// # fn main() {
 /// gateway!(|request, context| {
 ///     println!("{:?}", request);
-///     Ok(gateway::Response { status_code: 200, ..Default::default() })
+///     Ok(gateway::Response::default())
 /// });
 /// # }
 /// ```
@@ -201,9 +271,9 @@ where
 /// # fn main() {
 /// use gateway::{Request, Response, LambdaContext, GatewayResult};
 ///
-/// fn my_handler(event: Request, context: LambdaContext) -> GatewayResult {
-///     println!("{:?}", event);
-///      Ok(Response { status_code: 200, ..Default::default() })
+/// fn my_handler(request: Request, context: LambdaContext) -> GatewayResult {
+///     println!("{:?}", request);
+///     Ok(Response::builder().body(":thumbsup:").build())
 /// }
 ///
 /// gateway!(my_handler);
@@ -219,8 +289,8 @@ where
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway! {
-///     "one" => |event, context| { Ok(gateway::Response { ..Default::default() }) },
-///     "two" => |event, context| { Ok(gateway::Response { ..Default::default() }) },
+///     "one" => |request, context| { Ok(gateway::Response::builder().body("1").build()) },
+///     "two" => |request, context| { Ok(gateway::Response::builder().body("2").build()) },
 /// };
 /// # }
 /// ```
@@ -245,10 +315,10 @@ where
 /// # fn main() {
 /// gateway! {
 ///     crate (libkappa, initlibkappa, PyInit_libkappa) {
-///         "handler" => |event, context| {
-///            Ok(gateway::Response {
-///               body: "hi from libkappa".into(), ..Default::default()
-///            })
+///         "handler" => |request, context| {
+///            Ok(gateway::Response::builder().body(
+///               "hi from libkappa"
+///            ))
 ///         }
 ///     }
 /// };
