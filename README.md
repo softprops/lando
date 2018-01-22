@@ -6,7 +6,9 @@
 
 ## Roadmap
 
+```
 [x] expose typesafe interface for API gateway handlers
 [ ] expose API gateway interface adapting to Rust's http crate
+```
 
 Doug Tangren (softprops) 2018
