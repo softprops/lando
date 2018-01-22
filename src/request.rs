@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Deserializer};
 
-/// representation of API Gateway proxy event data
+/// Representation of API Gateway proxy event data
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
@@ -23,7 +23,7 @@ pub struct Request {
     pub request_context: Context,
 }
 
-/// API gateway Request context
+/// API Gateway request context
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Context {
@@ -43,4 +43,29 @@ where
 {
     let opt = Option::deserialize(deserializer)?;
     Ok(opt.unwrap_or_else(|| Default::default()))
+}
+
+#[cfg(test)]
+mod tests {
+
+    use std::collections::HashMap;
+
+    use serde_json;
+
+    use super::nullable_map;
+
+    #[test]
+    fn deserialize_with_null() {
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct Test {
+            #[serde(deserialize_with = "nullable_map")]
+            foo: HashMap<String, String>,
+        }
+
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{"foo":null}"#).expect("failed to deserialize"),
+            Test { foo: HashMap::new() }
+        )
+    }
+
 }

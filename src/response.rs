@@ -18,7 +18,9 @@ use std::ops::Not;
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     status_code: u16,
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     headers: HashMap<String, String>,
+    #[serde(skip_serializing_if = "String::is_empty")]
     body: String,
     #[serde(skip_serializing_if = "Not::not")]
     is_base64_encoded: bool,
@@ -104,13 +106,32 @@ impl Builder {
 
 #[cfg(test)]
 mod tests {
+
     use Response;
+    use serde_json;
+
     #[test]
     fn default_response() {
-        assert!(Response::default().status_code == 200)
+        assert_eq!(Response::default().status_code, 200)
     }
     #[test]
     fn builder_body() {
-        assert!(Response::builder().body("foo").build().body == "foo")
+        assert_eq!(Response::builder().body("foo").build().body, "foo")
+    }
+    #[test]
+    fn serialize_default() {
+        assert_eq!(
+            serde_json::to_string(&Response::default()).expect("failed to serialize response"),
+            r#"{"statusCode":200}"#
+        );
+    }
+
+    #[test]
+    fn serialize_body() {
+        assert_eq!(
+            serde_json::to_string(&Response::builder().body("foo").build())
+                .expect("failed to serialize response"),
+            r#"{"statusCode":200,"body":"foo"}"#
+        );
     }
 }
