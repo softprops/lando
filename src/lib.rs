@@ -25,7 +25,7 @@
 //! extern crate cpython;
 //! ```
 //!
-//! And write your function using the `gateway!` macro:
+//! And write your function using the [gateway!](macro.gateway.html) macro:
 //!
 //! ```rust
 //! # #[macro_use(gateway)] extern crate gateway;
@@ -51,7 +51,7 @@
 //! If you're using the
 //! `gateway!` macro as above, you need to use `lambda` for the library name
 //! (see the documentation
-//! for `gateway!` if you want to use something else).
+//! for [gateway!](macro.gateway.html) if you want to use something else).
 //!
 //! ```toml
 //! [lib]
