@@ -1,9 +1,8 @@
-//! gateway extends the [crowbar](https://crates.io/crates/crowbar) crate making
+//! Gateway extends the [crowbar](https://crates.io/crates/crowbar) crate making
 //! it possible to write type safe AWS Lambda functions in Rust that are invoked
 //! by [API gateway](https://aws.amazon.com/api-gateway/) events.
 //!
-//! It exports native Rust functions as CPython modules that handle converting
-//! Python objects into Rust objects and back again, making it possible to embed
+//! It exports native Rust functions as CPython modules making it possible to embed
 //! handlers within aws's python3.6 runtime.
 //!
 //! # Usage
@@ -56,13 +55,16 @@
 //!
 //! ```toml
 //! [lib]
-//! name = "gateway"
+//! name = "lambda"
 //! crate-type = ["cdylib"]
 //! ```
 //!
+//! > Note: cdylib exports C interface from a Rust dynamic library.
+//!
+//! > Link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
+//!
 //! `cargo build` will now build a `liblambda.so`. Put this in a zip file and
-//! upload it to an AWS
-//! Lambda function. Use the Python 3.6 execution environment with the handler
+//! upload it to an AWS Lambda function. Use the Python 3.6 execution environment with the handler
 //! configured as `liblambda.handler`.
 //!
 //! Because you're building a dynamic library, other libraries that you're dynamically linking

@@ -48,9 +48,15 @@ impl Response {
     pub fn body(&self) -> &String {
         &self.body
     }
+
+    pub fn is_base64_encoded(&self) -> bool {
+        self.is_base64_encoded
+    }
 }
 
 /// An HTTP response builder
+///
+/// You will typically should create one with `Response::builder()`
 #[derive(Debug, Default)]
 pub struct Builder {
     status_code: u16,
@@ -72,6 +78,8 @@ impl Builder {
         self
     }
 
+    /// Set response body. If body is base64 encoded
+    /// set `base64_encoded(true)`.
     pub fn body<B>(&mut self, b: B) -> &mut Self
     where
         B: Into<String>,
@@ -89,7 +97,8 @@ impl Builder {
         self
     }
 
-    pub fn is_base64_encoded(&mut self, is: bool) -> &mut Self {
+    /// Sets a hint to API gateway that response body is base64 encoded
+    pub fn base64_encoded(&mut self, is: bool) -> &mut Self {
         self.is_base64_encoded = is;
         self
     }
