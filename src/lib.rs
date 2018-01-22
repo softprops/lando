@@ -39,7 +39,7 @@
 //! # }
 //! ```
 //!
-//! # Building Lambda functions
+//! # Packaging functions
 //!
 //! For your code to be usable in AWS Lambda's Python3.6 execution environment,
 //! you need to compile to
@@ -71,12 +71,7 @@
 //! against need to also be in the Lambda execution environment. The easiest way to do this is
 //! building in an environment similar to Lambda's, such as Amazon Linux. You can use an [EC2
 //! instance](https://aws.amazon.com/amazon-linux-ami/) or a [Docker
-//! container](https://hub.docker.com/_/amazonlinux/).
-//!
-//! The `builder` directory of the [crowbar git repo](https://github.com/ilianaw/rust-crowbar)
-//! contains a `Dockerfile` with Rust set up and a build script to dump a zip file containing a
-//! stripped shared library to stdout. Documentation for using that is available at
-//! [ilianaw/crowbar-builder on Docker Hub](https://hub.docker.com/r/ilianaw/crowbar-builder/).
+//! container](https://hub.docker.com/r/lambci/lambda).
 //!
 
 extern crate crowbar;
