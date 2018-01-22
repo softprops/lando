@@ -1,4 +1,4 @@
-# gateway [![Build Status](https://travis-ci.org/softprops/gateway.svg?branch=master)](https://travis-ci.org/softprops/gateway)
+# gateway [![Build Status](https://travis-ci.org/softprops/gateway.svg?branch=master)](https://travis-ci.org/softprops/gateway) [![Coverage Status](https://coveralls.io/repos/github/softprops/gateway/badge.svg)](https://coveralls.io/github/softprops/gateway)
 
 > aws lambda gateway api trigger interfaces for [Rustlang](https://www.rust-lang.org) applications
 

@@ -10,6 +10,10 @@ keywords = ["serverless", "aws", "lambda"]
 license = "MIT"
 readme = "README.md"
 
+[badges]
+travis-ci = { repository = "softprops/gateway" }
+coveralls = { repository = "softprops/gateway" }
+
 [dependencies]
 crowbar = "0.2"
 cpython-json = { version = "0.2", default-features = false }
