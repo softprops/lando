@@ -1,13 +1,14 @@
-//! gateway extends the [crowbar](https://crates.io/crates/crowbar) crate makes
+//! gateway extends the [crowbar](https://crates.io/crates/crowbar) crate making
 //! it possible to write type safe AWS Lambda functions in Rust that are invoked
-//! on [API gateway](https://aws.amazon.com/api-gateway/) events.
-//! It exports native Rust functions
-//! as CPython modules that handle converting Python objects into Rust
-//! objects and back again.
+//! by [API gateway](https://aws.amazon.com/api-gateway/) events.
+//!
+//! It exports native Rust functions as CPython modules that handle converting
+//! Python objects into Rust objects and back again, making it possible to embed
+//! handlers within aws's python3.6 runtime.
 //!
 //! # Usage
 //!
-//! Add both gateway and cpython to your `Cargo.toml`:
+//! Add both `gateway` and `cpython `to your `Cargo.toml`:
 //!
 //! ```toml
 //! [dependencies]
@@ -20,6 +21,7 @@
 //! ```rust,ignore
 //! #[macro_use(gateway)]
 //! extern crate gateway;
+//! // the following imports macros needed by the gateway macro
 //! #[macro_use]
 //! extern crate cpython;
 //! ```
@@ -32,7 +34,7 @@
 //! # fn main() {
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
-//!     // return the event without doing anything with it
+//!     // return a basic 200 response
 //!     Ok(gateway::Response { ..Default::default() })
 //! });
 //! # }
@@ -40,23 +42,28 @@
 //!
 //! # Building Lambda functions
 //!
-//! For your code to be usable in AWS Lambda's Python execution environment, you need to compile to
-//! a dynamic library with the necessary functions for CPython to run. The `lambda!` macro does
+//! For your code to be usable in AWS Lambda's Python3.6 execution environment,
+//! you need to compile to
+//! a dynamic library with the necessary functions for CPython to run. The
+//! `gateway!` macro does
 //! most of this for you, but cargo still needs to know what to do.
 //!
-//! You can configure cargo to build a dynamic library with the following. If you're using the
-//! `lambda!` macro as above, you need to use `lambda` for the library name (see the documentation
-//! for `lambda!` if you want to use something else).
+//! You can configure cargo to build a dynamic library with the following.
+//! If you're using the
+//! `gateway!` macro as above, you need to use `lambda` for the library name
+//! (see the documentation
+//! for `gateway!` if you want to use something else).
 //!
 //! ```toml
 //! [lib]
-//! name = "lambda"
+//! name = "gateway"
 //! crate-type = ["cdylib"]
 //! ```
 //!
-//! `cargo build` will now build a `liblambda.so`. Put this in a zip file and upload it to an AWS
-//! Lambda function. Use the Python 3.6 execution environment with the handler configured as
-//! `liblambda.handler`.
+//! `cargo build` will now build a `liblambda.so`. Put this in a zip file and
+//! upload it to an AWS
+//! Lambda function. Use the Python 3.6 execution environment with the handler
+//! configured as `liblambda.handler`.
 //!
 //! Because you're building a dynamic library, other libraries that you're dynamically linking
 //! against need to also be in the Lambda execution environment. The easiest way to do this is
@@ -238,7 +245,11 @@ where
 /// # fn main() {
 /// gateway! {
 ///     crate (libkappa, initlibkappa, PyInit_libkappa) {
-///         "handler" => |event, context| { Ok(gateway::Response { body: "hi from libkappa".into(), ..Default::default() }) }
+///         "handler" => |event, context| {
+///            Ok(gateway::Response {
+///               body: "hi from libkappa".into(), ..Default::default()
+///            })
+///         }
 ///     }
 /// };
 /// # }
