@@ -6,62 +6,38 @@ use std::ops::Not;
 /// Representation of API Gateway response
 ///
 /// # Examples
-///
-/// ```
-/// # use gateway::Response;
-/// let response: Response = Response::default();
-/// assert!(response.status_code() == 200);
-/// assert!(response.headers().is_empty());
-/// assert!(response.body() == "");
-/// ```
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Response {
+pub(crate) struct GatewayResponse {
     status_code: u16,
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     headers: HashMap<String, String>,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    body: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    body: Option<String>,
     #[serde(skip_serializing_if = "Not::not")]
     is_base64_encoded: bool,
 }
 
-impl Default for Response {
+impl Default for GatewayResponse {
     fn default() -> Self {
-        Response::builder().build()
+        Self::builder().build()
     }
 }
 
-impl Response {
+impl GatewayResponse {
     pub fn builder() -> Builder {
         Builder::new()
-    }
-
-    pub fn status_code(&self) -> u16 {
-        self.status_code
-    }
-
-    pub fn headers(&self) -> &HashMap<String, String> {
-        &self.headers
-    }
-
-    pub fn body(&self) -> &String {
-        &self.body
-    }
-
-    pub fn is_base64_encoded(&self) -> bool {
-        self.is_base64_encoded
     }
 }
 
 /// An HTTP response builder
 ///
-/// You will typically should create one with `Response::builder()`
+/// You will typically should create one with `GatewayResponse::builder()`
 #[derive(Debug, Default)]
-pub struct Builder {
+pub(crate) struct Builder {
     status_code: u16,
     headers: HashMap<String, String>,
-    body: String,
+    body: Option<String>,
     is_base64_encoded: bool,
 }
 
@@ -82,18 +58,20 @@ impl Builder {
     /// set `base64_encoded(true)`.
     pub fn body<B>(&mut self, b: B) -> &mut Self
     where
-        B: Into<String>,
+        B: Into<Option<String>>,
     {
         self.body = b.into();
         self
     }
 
-    pub fn header<K, V>(&mut self, k: K, v: V) -> &mut Self
+    pub fn headers<K, V>(&mut self, hdrs: Vec<(K, V)>) -> &mut Self
     where
         K: Into<String>,
         V: Into<String>,
     {
-        self.headers.insert(k.into(), v.into());
+        for (k, v) in hdrs {
+            self.headers.insert(k.into(), v.into());
+        }
         self
     }
 
@@ -103,8 +81,8 @@ impl Builder {
         self
     }
 
-    pub fn build(&self) -> Response {
-        Response {
+    pub fn build(&self) -> GatewayResponse {
+        GatewayResponse {
             status_code: self.status_code,
             headers: self.headers.clone(),
             body: self.body.clone(),
@@ -116,21 +94,28 @@ impl Builder {
 #[cfg(test)]
 mod tests {
 
-    use Response;
+    use super::GatewayResponse;
     use serde_json;
 
     #[test]
     fn default_response() {
-        assert_eq!(Response::default().status_code, 200)
+        assert_eq!(GatewayResponse::default().status_code, 200)
     }
     #[test]
     fn builder_body() {
-        assert_eq!(Response::builder().body("foo").build().body, "foo")
+        assert_eq!(
+            GatewayResponse::builder()
+                .body("foo".to_owned())
+                .build()
+                .body,
+            Some("foo".to_owned())
+        )
     }
     #[test]
     fn serialize_default() {
         assert_eq!(
-            serde_json::to_string(&Response::default()).expect("failed to serialize response"),
+            serde_json::to_string(&GatewayResponse::default())
+                .expect("failed to serialize response"),
             r#"{"statusCode":200}"#
         );
     }
@@ -138,7 +123,7 @@ mod tests {
     #[test]
     fn serialize_body() {
         assert_eq!(
-            serde_json::to_string(&Response::builder().body("foo").build())
+            serde_json::to_string(&GatewayResponse::builder().body("foo".to_owned()).build())
                 .expect("failed to serialize response"),
             r#"{"statusCode":200,"body":"foo"}"#
         );

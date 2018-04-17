@@ -1,5 +1,5 @@
 [package]
-name = "gateway"
+name = "lando"
 version = "0.0.0"
 authors = ["softprops <d.tangren@gmail.com>"]
 description = "Rust interface lambda API gateway events"
@@ -15,6 +15,7 @@ travis-ci = { repository = "softprops/gateway" }
 coveralls = { repository = "softprops/gateway" }
 
 [dependencies]
+http = "0.1"
 crowbar = "0.2"
 cpython-json = { version = "0.2", default-features = false }
 cpython = "0.1"

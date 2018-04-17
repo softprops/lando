@@ -7,7 +7,7 @@ use serde::{Deserialize, Deserializer};
 /// Representation of API Gateway proxy event data
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct Request {
+pub(crate) struct GatewayRequest {
     pub resource: String,
     pub path: String,
     pub http_method: String,
@@ -26,7 +26,7 @@ pub struct Request {
 /// API Gateway request context
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct Context {
+pub(crate) struct Context {
     pub path: String,
     pub account_id: String,
     pub resource_id: String,
@@ -52,13 +52,13 @@ mod tests {
 
     use serde_json;
 
-    use Request;
+    use super::GatewayRequest;
     use super::nullable_map;
 
     #[test]
     fn implements_default() {
         assert_eq!(
-            Request {
+            GatewayRequest {
                 path: "/foo".into(),
                 ..Default::default()
             }.path,
@@ -76,7 +76,9 @@ mod tests {
 
         assert_eq!(
             serde_json::from_str::<Test>(r#"{"foo":null}"#).expect("failed to deserialize"),
-            Test { foo: HashMap::new() }
+            Test {
+                foo: HashMap::new(),
+            }
         )
     }
 

@@ -1,17 +1,20 @@
-//! Gateway extends the [crowbar](https://crates.io/crates/crowbar) crate making
-//! it possible to write type safe AWS Lambda functions in Rust that are invoked
-//! by [API gateway](https://aws.amazon.com/api-gateway/) events.
+//! Lando extends the [crowbar](https://crates.io/crates/crowbar) crate making
+//! it possible to create type safe AWS Lambda functions in Rust that are invoked
+//! by [API gateway](https://aws.amazon.com/api-gateway/) events using
+//! standard [http](https://crates.io/crates/http) types.
 //!
 //! It exports native Rust functions as CPython modules making it possible to embed
-//! handlers within aws's python3.6 runtime.
+//! handlers within aws' [python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
+//!
+//! For convenience, `lando` re-exports `http::Request` and `http::Response` types.
 //!
 //! # Usage
 //!
-//! Add both `gateway` and `cpython `to your `Cargo.toml`:
+//! Add both `lando` and `cpython `to your `Cargo.toml`:
 //!
 //! ```toml
 //! [dependencies]
-//! gateway = "0.1"
+//! lando = "0.1"
 //! cpython = "0.1"
 //! ```
 //!
@@ -19,7 +22,7 @@
 //!
 //! ```rust,ignore
 //! #[macro_use(gateway)]
-//! extern crate gateway;
+//! extern crate lando;
 //! // the following imports macros needed by the gateway macro
 //! #[macro_use]
 //! extern crate cpython;
@@ -28,13 +31,13 @@
 //! And write your function using the [gateway!](macro.gateway.html) macro:
 //!
 //! ```rust
-//! # #[macro_use(gateway)] extern crate gateway;
+//! # #[macro_use(gateway)] extern crate lando;
 //! # #[macro_use] extern crate cpython;
 //! # fn main() {
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
-//!     Ok(gateway::Response::default())
+//!     Ok(lando::Response::default())
 //! });
 //! # }
 //! ```
@@ -44,7 +47,7 @@
 //! For your code to be usable in AWS Lambda's Python3.6 execution environment,
 //! you need to compile to
 //! a dynamic library with the necessary functions for CPython to run. The
-//! `gateway!` macro does
+//! [gateway!](macro.gateway.html) macro does
 //! most of this for you, but cargo still needs to know what to do.
 //!
 //! You can configure cargo to build a dynamic library with the following.
@@ -63,8 +66,9 @@
 //!
 //! > Link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
-//! `cargo build` will now build a `liblambda.so`. Put this in a zip file and
-//! upload it to an AWS Lambda function. Use the Python 3.6 execution environment with the handler
+//! `cargo build` will now produce an aws deployable `liblambda.so` binary.
+//! Package this in a zip file and upload it to an AWS Lambda function.
+//! Use the Python 3.6 execution environment with the handler
 //! configured as `liblambda.handler`.
 //!
 //! Because you're building a dynamic library, other libraries that you're dynamically linking
@@ -74,8 +78,9 @@
 //! container](https://hub.docker.com/r/lambci/lambda).
 //!
 
-extern crate crowbar;
 extern crate cpython;
+extern crate crowbar;
+extern crate http as rust_http;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -86,16 +91,22 @@ pub use cpython::{PyObject, PyResult};
 use cpython::Python;
 pub use crowbar::LambdaContext;
 
-pub mod response;
-pub mod request;
+mod request;
+mod response;
+mod http;
+pub use http::RequestExt;
 
-pub use response::Response;
-pub use request::Request;
+/// A re-exported version of `http::Request` with a type
+/// parameter fixed type `Option<String>`
+pub type Request = rust_http::Request<Option<String>>;
+
+pub use rust_http::Response;
 
 /// Result type for API Gateway requests
-pub type GatewayResult = Result<Response, Box<std::error::Error>>;
+pub type GatewayResult = Result<Response<Option<String>>, Box<std::error::Error>>;
 
 // wrap crowbar handler in gateway handler
+// which works with http crate types lifting them into apigw types
 #[doc(hidden)]
 pub fn handler<F>(py: Python, f: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
 where
@@ -103,21 +114,23 @@ where
 {
     crowbar::handler(
         py,
-        |event, ctx| f(serde_json::from_value::<Request>(event)?, ctx),
+        |event, ctx| {
+            let apigw = serde_json::from_value::<request::GatewayRequest>(event)?;
+            f(Request::from(apigw), ctx).map(response::GatewayResponse::from)
+        },
         py_event,
         py_context,
     )
 }
 
-#[macro_export]
 /// Macro to wrap a Lambda function handler for api gateway events.
 ///
-/// Lambda functions accept two arguments (the event, a `gateway::Request`, and the context, a
+/// Lambda functions accept two arguments (the event, a `lando::Request`, and the context, a
 /// `LambdaContext`) and returns a value (a serde_json `Value`). The function signature should look
 /// like:
 ///
 /// ```rust,ignore
-/// fn handler(event: Request, context: LambdaContext) -> GatewayResult
+/// fn handler(request: Request, context: LambdaContext) -> GatewayResult
 /// ```
 ///
 /// To use this macro, you need to `macro_use` both crowbar *and* cpython, because crowbar
@@ -125,7 +138,7 @@ where
 ///
 /// ```rust,ignore
 /// #[macro_use(gateway)]
-/// extern crate gateway;
+/// extern crate lando;
 /// #[macro_use]
 /// extern crate cpython;
 /// ```
@@ -135,12 +148,12 @@ where
 /// You can wrap a closure with `gateway!`:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway!(|request, context| {
 ///     println!("{:?}", request);
-///     Ok(gateway::Response::default())
+///     Ok(lando::Response::default())
 /// });
 /// # }
 /// ```
@@ -148,14 +161,14 @@ where
 /// You can also define a named function:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// use gateway::{Request, Response, LambdaContext, GatewayResult};
+/// use lando::{Request, Response, LambdaContext, GatewayResult};
 ///
 /// fn my_handler(request: Request, context: LambdaContext) -> GatewayResult {
 ///     println!("{:?}", request);
-///     Ok(Response::builder().body(":thumbsup:").build())
+///     Ok(Response::new(Some(":thumbsup:".to_owned()))?)
 /// }
 ///
 /// gateway!(my_handler);
@@ -167,12 +180,12 @@ where
 /// You can define multiple handlers in the same module in a way similar to `match`:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway! {
-///     "one" => |request, context| { Ok(gateway::Response::builder().body("1").build()) },
-///     "two" => |request, context| { Ok(gateway::Response::builder().body("2").build()) },
+///     "one" => |request, context| { Ok(lando::Response::new(Some("1".to_string()))) },
+///     "two" => |request, context| { Ok(lando::Response::new(Some("2".to_string()))) }
 /// };
 /// # }
 /// ```
@@ -192,20 +205,21 @@ where
 /// upon the multiple handler version of `gateway!`:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway! {
 ///     crate (libkappa, initlibkappa, PyInit_libkappa) {
 ///         "handler" => |request, context| {
-///            Ok(gateway::Response::builder().body(
-///               "hi from libkappa"
-///            ).build())
+///            Ok(lando::Response::new(
+///               Some("hi from libkappa".to_string())
+///            )?)
 ///         }
 ///     }
 /// };
 /// # }
 /// ```
+#[macro_export]
 macro_rules! gateway {
     (@module ($module:ident, $py2:ident, $py3:ident)
      @handlers ($($handler:expr => $target:expr),*)) => {
