@@ -23,6 +23,7 @@
 //! cpython = "0.1"
 //! ```
 //!
+//!
 //! Use macros from both crates:
 //!
 //! ```rust,ignore
@@ -170,7 +171,7 @@ where
 /// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// use lando::{Request, Response, LambdaContext, Result};
+/// use lando::{LambdaContext, Request, Response, Result};
 ///
 /// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
