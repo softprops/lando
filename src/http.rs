@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use rust_http::{Request, Response};
+use rust_http::{Request as HttpRequest, Response as HttpResponse};
 use request::GatewayRequest;
 use response::GatewayResponse;
 
@@ -27,7 +27,7 @@ pub trait RequestExt {
     fn is_base64_encoded(&self) -> bool;
 }
 
-impl<T> RequestExt for Request<T> {
+impl<T> RequestExt for HttpRequest<T> {
     fn query_string_parameters(&self) -> HashMap<String, String> {
         self.extensions()
             .get::<QueryStringParameters>()
@@ -57,27 +57,25 @@ impl<T> RequestExt for Request<T> {
 
 // resolve a gateway reqponse for an http::Response
 
-impl From<Response<Option<String>>> for GatewayResponse {
-    fn from(value: Response<Option<String>>) -> GatewayResponse {
-        GatewayResponse::builder()
-            .status_code(value.status().as_u16())
-            .body(value.body().clone())
-            .headers(
-                value
-                    .headers()
-                    .iter()
-                    .map(|(k, v)| (k.as_str().to_owned(), v.to_str().unwrap().to_owned()))
-                    .collect::<Vec<(String, String)>>(),
-            )
-            .build()
+impl From<HttpResponse<Option<String>>> for GatewayResponse {
+    fn from(value: HttpResponse<Option<String>>) -> GatewayResponse {
+        GatewayResponse {
+            status_code: value.status().as_u16(),
+            body: value.body().clone(),
+            headers: value
+                .headers()
+                .iter()
+                .map(|(k, v)| (k.as_str().to_owned(), v.to_str().unwrap().to_owned()))
+                .collect::<HashMap<String, String>>(),
+            is_base64_encoded: Default::default(), // todo
+        }
     }
 }
 
 // resolve a http::Request from a gatway request
-impl From<GatewayRequest> for Request<Option<String>> {
+impl From<GatewayRequest> for HttpRequest<Option<String>> {
     fn from(value: GatewayRequest) -> Self {
         let GatewayRequest {
-            resource,
             path,
             http_method,
             headers,
@@ -86,11 +84,11 @@ impl From<GatewayRequest> for Request<Option<String>> {
             stage_variables,
             body,
             is_base64_encoded,
-            request_context,
+            request_context, // todo: expose this as an ext
         } = value;
 
         // build an http::Result from a lando::Request
-        let mut builder = Request::builder();
+        let mut builder = HttpRequest::builder();
         builder.method(http_method.as_str()).uri({
             format!(
                 "https://{}{}",
@@ -105,6 +103,8 @@ impl From<GatewayRequest> for Request<Option<String>> {
         builder.extension(QueryStringParameters(query_string_parameters));
         builder.extension(PathParameters(path_parameters));
         builder.extension(StageVariables(stage_variables));
+        builder.extension(Base64Encoded(is_base64_encoded));
+
         builder.body(body).expect("failed to build request")
     }
 }
@@ -112,7 +112,7 @@ impl From<GatewayRequest> for Request<Option<String>> {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use rust_http::Request;
+    use rust_http::Request as HttpRequest;
     use RequestExt;
     use super::GatewayRequest;
 
@@ -126,10 +126,10 @@ mod tests {
             headers: headers,
             ..Default::default()
         };
-        let expected = Request::get("https://www.rust-lang.org/foo")
+        let expected = HttpRequest::get("https://www.rust-lang.org/foo")
             .body(())
             .unwrap();
-        let actual = Request::from(gwr);
+        let actual = HttpRequest::from(gwr);
         assert_eq!(expected.uri(), actual.uri());
         assert_eq!(expected.method(), actual.method());
     }
@@ -147,10 +147,22 @@ mod tests {
             query_string_parameters: query.clone(),
             ..Default::default()
         };
-        let expected = Request::get("https://www.rust-lang.org/foo")
-            .body(())
-            .unwrap();
-        let actual = Request::from(gwr);
+        let actual = HttpRequest::from(gwr);
         assert_eq!(actual.query_string_parameters(), query.clone());
+    }
+
+    #[test]
+    fn requests_have_is_base64() {
+        let mut headers = HashMap::new();
+        headers.insert("Host".to_owned(), "www.rust-lang.org".to_owned());
+        let gwr: GatewayRequest = GatewayRequest {
+            path: "/foo".into(),
+            http_method: "GET".into(),
+            headers: headers,
+            is_base64_encoded: true,
+            ..Default::default()
+        };
+        let actual = HttpRequest::from(gwr);
+        assert_eq!(actual.is_base64_encoded(), true);
     }
 }

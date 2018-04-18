@@ -8,7 +8,7 @@ use serde::{Deserialize, Deserializer};
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GatewayRequest {
-    pub resource: String,
+    //pub resource: String,
     pub path: String,
     pub http_method: String,
     pub headers: HashMap<String, String>,
@@ -52,8 +52,7 @@ mod tests {
 
     use serde_json;
 
-    use super::GatewayRequest;
-    use super::nullable_map;
+    use super::{nullable_map, GatewayRequest};
 
     #[test]
     fn implements_default() {

@@ -1,9 +1,14 @@
-//! Lando extends the [crowbar](https://crates.io/crates/crowbar) crate making
+//! Lando exposes your Rustlang functions over http using [AWS lambda](https://aws.amazon.com/lambda/)
+//! by extending the [crowbar](https://crates.io/crates/crowbar) crate making
 //! it possible to create type safe AWS Lambda functions in Rust that are invoked
 //! by [API gateway](https://aws.amazon.com/api-gateway/) events using
 //! standard [http](https://crates.io/crates/http) types.
 //!
-//! It exports native Rust functions as CPython modules making it possible to embed
+//! AWS lambda is a managed service meaning that you do not need
+//! to manage servers. Instead you only focus on your application,
+//! and let the platform scale your application to meet its needs.
+//!
+//! Lando exports Rust functions as native CPython modules making it possible to embed
 //! handlers within aws' [python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
 //!
 //! For convenience, `lando` re-exports `http::Request` and `http::Response` types.
@@ -97,20 +102,21 @@ mod http;
 pub use http::RequestExt;
 
 /// A re-exported version of `http::Request` with a type
-/// parameter fixed type `Option<String>`
+/// parameter for body fixed to type `Option<String>`
 pub type Request = rust_http::Request<Option<String>>;
 
+/// A re-expored version of the `http::Response` type
 pub use rust_http::Response;
 
-/// Result type for API Gateway requests
-pub type GatewayResult = Result<Response<Option<String>>, Box<std::error::Error>>;
+/// Result type for gateway functions
+pub type Result = ::std::result::Result<Response<Option<String>>, Box<std::error::Error>>;
 
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
 #[doc(hidden)]
 pub fn handler<F>(py: Python, f: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
 where
-    F: FnOnce(Request, LambdaContext) -> GatewayResult,
+    F: FnOnce(Request, LambdaContext) -> Result,
 {
     crowbar::handler(
         py,
@@ -164,14 +170,14 @@ where
 /// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// use lando::{Request, Response, LambdaContext, GatewayResult};
+/// use lando::{Request, Response, LambdaContext, Result};
 ///
-/// fn my_handler(request: Request, context: LambdaContext) -> GatewayResult {
+/// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
-///     Ok(Response::new(Some(":thumbsup:".to_owned()))?)
+///     Ok(Response::new(Some(":thumbsup:".to_owned())))
 /// }
 ///
-/// gateway!(my_handler);
+/// gateway!(handler);
 /// # }
 /// ```
 ///
@@ -213,7 +219,7 @@ where
 ///         "handler" => |request, context| {
 ///            Ok(lando::Response::new(
 ///               Some("hi from libkappa".to_string())
-///            )?)
+///            ))
 ///         }
 ///     }
 /// };
