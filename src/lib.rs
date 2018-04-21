@@ -83,7 +83,9 @@
 //! instance](https://aws.amazon.com/amazon-linux-ami/) or a [Docker
 //! container](https://hub.docker.com/r/lambci/lambda).
 //!
-
+//!
+extern crate base64;
+extern crate bytes;
 extern crate cpython;
 extern crate crowbar;
 extern crate http as rust_http;
@@ -97,33 +99,37 @@ pub use cpython::{PyObject, PyResult};
 use cpython::Python;
 pub use crowbar::LambdaContext;
 
+mod body;
 mod request;
 mod response;
 mod http;
+
+pub use body::Body;
 pub use http::RequestExt;
 
 /// A re-exported version of `http::Request` with a type
-/// parameter for body fixed to type `Option<String>`
-pub type Request = rust_http::Request<Option<String>>;
+/// parameter for body fixed to type `lando::Body`
+pub type Request = rust_http::Request<Body>;
 
-/// A re-expored version of the `http::Response` type
+/// A re-exported version of the `http::Response` type
 pub use rust_http::Response;
 
 /// Result type for gateway functions
-pub type Result = ::std::result::Result<Response<Option<String>>, Box<std::error::Error>>;
+//pub type Result = ::std::result::Result<Response<Box<Into<Body>>>, Box<std::error::Error>>;
 
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
 #[doc(hidden)]
-pub fn handler<F>(py: Python, f: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
+pub fn handler<F,R>(py: Python, func: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
 where
-    F: FnOnce(Request, LambdaContext) -> Result,
+    F: FnOnce(Request, LambdaContext) -> ::std::result::Result<Response<R>, Box<std::error::Error>>,
+    R: Into<Body>
 {
     crowbar::handler(
         py,
         |event, ctx| {
             let apigw = serde_json::from_value::<request::GatewayRequest>(event)?;
-            f(Request::from(apigw), ctx).map(response::GatewayResponse::from)
+            func(Request::from(apigw), ctx).map(response::GatewayResponse::from)
         },
         py_event,
         py_context,
@@ -175,7 +181,7 @@ where
 ///
 /// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
-///     Ok(Response::new(Some(":thumbsup:".to_owned())))
+///     Ok(Response::new(Some(":thumbsup:".into())))
 /// }
 ///
 /// gateway!(handler);
@@ -190,16 +196,19 @@ where
 /// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
+/// use lando::Response;
+///
 /// gateway! {
-///     "one" => |request, context| { Ok(lando::Response::new(Some("1".to_string()))) },
-///     "two" => |request, context| { Ok(lando::Response::new(Some("2".to_string()))) }
+///     "one" => |request, context| { Ok(Response::new(Some("1".into()))) },
+///     "two" => |request, context| { Ok(Response::new(Some("2".into()))) }
 /// };
 /// # }
 /// ```
 ///
 /// # Changing the dynamic library name
 ///
-/// If you need to change the name of the built dynamic library, you first need to change the
+/// If you need to change the name of the dynamic library that gets built by default,
+///  you first need to change the
 /// `[lib]` section in Cargo.toml:
 ///
 /// ```toml
@@ -219,7 +228,7 @@ where
 ///     crate (libkappa, initlibkappa, PyInit_libkappa) {
 ///         "handler" => |request, context| {
 ///            Ok(lando::Response::new(
-///               Some("hi from libkappa".to_string())
+///               Some("hi from libkappa".into())
 ///            ))
 ///         }
 ///     }

@@ -26,13 +26,16 @@ pub(crate) struct GatewayRequest {
 /// API Gateway request context
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Context {
+pub struct Context {
     pub path: String,
     pub account_id: String,
     pub resource_id: String,
     pub stage: String,
     pub request_id: String,
+    pub resource_path: String,
+    pub http_method: String,
     pub api_id: String,
+    // todo: identity
 }
 
 /// deserializes (json) null values to empty hashmap
