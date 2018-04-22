@@ -7,10 +7,13 @@ use request::GatewayRequest;
 use response::GatewayResponse;
 use body::Body;
 
+/// api gateway pre-parsed http query string parameters
 pub struct QueryStringParameters(HashMap<String, String>);
 
+/// api gateway extracted url path parameters
 pub struct PathParameters(HashMap<String, String>);
 
+/// api gateway provided stage variables
 pub struct StageVariables(HashMap<String, String>);
 
 /// Extentions for `http::Request` objects that
@@ -99,10 +102,6 @@ impl From<GatewayRequest> for HttpRequest<Body> {
         builder.extension(PathParameters(path_parameters));
         builder.extension(StageVariables(stage_variables));
 
-        // todo: handle base64 decoding if needed
-        if is_base64_encoded {
-
-        }
         builder.body(match body {
             Some(b) => if is_base64_encoded {
                 Body::from(::base64::decode(&b).unwrap()) // :|

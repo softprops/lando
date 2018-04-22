@@ -1,4 +1,4 @@
-//! Lando exposes your Rustlang functions over http using [AWS lambda](https://aws.amazon.com/lambda/)
+//! Lando enables serverless HTTP Rust applications on [AWS lambda](https://aws.amazon.com/lambda/)
 //! by extending the [crowbar](https://crates.io/crates/crowbar) crate making
 //! it possible to create type safe AWS Lambda functions in Rust that are invoked
 //! by [API gateway](https://aws.amazon.com/api-gateway/) events using
@@ -43,7 +43,7 @@
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
-//!     Ok(lando::Response::default())
+//!     Ok(lando::Response::new(()))
 //! });
 //! # }
 //! ```
@@ -94,6 +94,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+use std::result::{Result as StdResult};
+use std::error::{Error as StdError};
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
 use cpython::Python;
@@ -115,7 +117,7 @@ pub type Request = rust_http::Request<Body>;
 pub use rust_http::Response;
 
 /// Result type for gateway functions
-//pub type Result = ::std::result::Result<Response<Box<Into<Body>>>, Box<std::error::Error>>;
+pub type Result = StdResult<Response<Body>, Box<StdError>>;
 
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
@@ -143,7 +145,7 @@ where
 /// like:
 ///
 /// ```rust,ignore
-/// fn handler(request: Request, context: LambdaContext) -> GatewayResult
+/// fn handler(request: Request, context: LambdaContext) -> Result
 /// ```
 ///
 /// To use this macro, you need to `macro_use` both crowbar *and* cpython, because crowbar
@@ -166,7 +168,7 @@ where
 /// # fn main() {
 /// gateway!(|request, context| {
 ///     println!("{:?}", request);
-///     Ok(lando::Response::default())
+///     Ok(lando::Response::new(()))
 /// });
 /// # }
 /// ```
@@ -177,11 +179,11 @@ where
 /// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// use lando::{LambdaContext, Request, Response, Result};
+/// use lando::{LambdaContext, Request, Response, Result, Body};
 ///
 /// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
-///     Ok(Response::new(Some(":thumbsup:".into())))
+///     Ok(Response::new(":thumbsup:".into()))
 /// }
 ///
 /// gateway!(handler);
@@ -199,8 +201,8 @@ where
 /// use lando::Response;
 ///
 /// gateway! {
-///     "one" => |request, context| { Ok(Response::new(Some("1".into()))) },
-///     "two" => |request, context| { Ok(Response::new(Some("2".into()))) }
+///     "one" => |request, context| { Ok(Response::new("1")) },
+///     "two" => |request, context| { Ok(Response::new("2")) }
 /// };
 /// # }
 /// ```
@@ -228,7 +230,7 @@ where
 ///     crate (libkappa, initlibkappa, PyInit_libkappa) {
 ///         "handler" => |request, context| {
 ///            Ok(lando::Response::new(
-///               Some("hi from libkappa".into())
+///               "hi from libkappa"
 ///            ))
 ///         }
 ///     }

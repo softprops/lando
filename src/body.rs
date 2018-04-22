@@ -9,6 +9,12 @@ pub enum Body {
   Bytes(Bytes)
 }
 
+impl Default for Body {
+  fn default() -> Self {
+    Body::Empty
+  }
+}
+
 impl From<()> for Body {
   fn from(_: ()) -> Self {
     Body::Empty
