@@ -14,7 +14,11 @@ export CARGO_TARGET_DIR=$PWD/target/lambda
 ) 1>&2
 cd "$CARGO_TARGET_DIR"/release
 (
-    strip liblambda.so
-    zip lambda.zip liblambda.so
+    for file in $(
+      find -maxdepth 1 -executable -type f \( -name "*.*" -or -name "*script*" -or -regex ".*-[a-f0-9]{16}" \)
+    ); do
+        strip "$file"
+        zip lambda.zip "$file"
+    done
 ) 1>&2
 exec cat lambda.zip
