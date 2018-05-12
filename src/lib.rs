@@ -83,7 +83,6 @@
 //! instance](https://aws.amazon.com/amazon-linux-ami/) or a [Docker
 //! container](https://hub.docker.com/r/lambci/lambda).
 //!
-//!
 extern crate base64;
 extern crate bytes;
 extern crate cpython;
@@ -94,17 +93,20 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use std::result::{Result as StdResult};
-use std::error::{Error as StdError};
+// Std
+use std::error::Error as StdError;
+use std::result::Result as StdResult;
+
+// Third Party
+use cpython::Python;
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
-use cpython::Python;
 pub use crowbar::LambdaContext;
 
 mod body;
+mod http;
 mod request;
 mod response;
-mod http;
 
 pub use body::Body;
 pub use http::RequestExt;
@@ -122,10 +124,15 @@ pub type Result = StdResult<Response<Body>, Box<StdError>>;
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
 #[doc(hidden)]
-pub fn handler<F,R>(py: Python, func: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
+pub fn handler<F, R>(
+    py: Python,
+    func: F,
+    py_event: PyObject,
+    py_context: PyObject,
+) -> PyResult<PyObject>
 where
-    F: FnOnce(Request, LambdaContext) -> ::std::result::Result<Response<R>, Box<std::error::Error>>,
-    R: Into<Body>
+    F: FnOnce(Request, LambdaContext) -> StdResult<Response<R>, Box<StdError>>,
+    R: Into<Body>,
 {
     crowbar::handler(
         py,
@@ -138,7 +145,7 @@ where
     )
 }
 
-/// Macro to wrap a Lambda function handler for api gateway events.
+/// Macro to wrap a Lambda function handler for API gateway events.
 ///
 /// Lambda functions accept two arguments (the event, a `lando::Request`, and the context, a
 /// `LambdaContext`) and returns a value (a serde_json `Value`). The function signature should look
@@ -173,7 +180,7 @@ where
 /// # }
 /// ```
 ///
-/// You can also define a named function:
+/// You can also provide a named function:
 ///
 /// ```rust
 /// # #[macro_use(gateway)] extern crate lando;

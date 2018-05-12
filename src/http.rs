@@ -2,28 +2,28 @@
 
 use std::collections::HashMap;
 
-use rust_http::{Request as HttpRequest, Response as HttpResponse};
+use body::Body;
 use request::GatewayRequest;
 use response::GatewayResponse;
-use body::Body;
+use rust_http::{Request as HttpRequest, Response as HttpResponse};
 
-/// api gateway pre-parsed http query string parameters
+/// API gateway pre-parsed http query string parameters
 pub struct QueryStringParameters(HashMap<String, String>);
 
-/// api gateway extracted url path parameters
+/// API gateway extracted url path parameters
 pub struct PathParameters(HashMap<String, String>);
 
-/// api gateway provided stage variables
+/// API gateway provided stage variables
 pub struct StageVariables(HashMap<String, String>);
 
 /// Extentions for `http::Request` objects that
-/// provide access to api gateway features
+/// provide access to API gateway features
 pub trait RequestExt {
-    /// Return query string parameters associated with the request
+    /// Return query string parameters associated with the API gateway request
     fn query_string_parameters(&self) -> HashMap<String, String>;
-    /// Return path parameters associated with the request
+    /// Return path parameters associated with the API gateway request
     fn path_parameters(&self) -> HashMap<String, String>;
-    /// Return stage variables associated with the request
+    /// Return stage variables associated with the API gateway request
     fn stage_variables(&self) -> HashMap<String, String>;
 }
 
@@ -50,19 +50,22 @@ impl<T> RequestExt for HttpRequest<T> {
 
 // resolve a gateway reqponse for an http::Response
 
-impl <T> From<HttpResponse<T>> for GatewayResponse where T: Into<Body> {
+impl<T> From<HttpResponse<T>> for GatewayResponse
+where
+    T: Into<Body>,
+{
     fn from(value: HttpResponse<T>) -> GatewayResponse {
-         let headers = value
-                .headers()
-                .iter()
-                .map(|(k, v)| (k.as_str().to_owned(), v.to_str().unwrap().to_owned()))
-                .collect::<HashMap<String, String>>();
+        let headers = value
+            .headers()
+            .into_iter()
+            .map(|(k, v)| (k.as_str().to_owned(), v.to_str().unwrap().to_owned()))
+            .collect::<HashMap<String, String>>();
 
         GatewayResponse {
             status_code: value.status().as_u16(),
             body: match value.into_body().into() {
                 Body::Empty => None,
-                Body::Bytes(b) => Some(String::from_utf8_lossy(b.as_ref()).to_string())
+                Body::Bytes(b) => Some(String::from_utf8_lossy(b.as_ref()).to_string()),
             },
             headers: headers,
             is_base64_encoded: Default::default(), // todo: infer from Content-{Encoding,Type} headers
@@ -90,7 +93,7 @@ impl From<GatewayRequest> for HttpRequest<Body> {
         builder.method(http_method.as_str()).uri({
             format!(
                 "https://{}{}",
-                headers.get("Host").unwrap_or(&"???".to_owned()),
+                headers.get("Host").unwrap_or(&String::new()),
                 path
             )
         });
@@ -102,23 +105,25 @@ impl From<GatewayRequest> for HttpRequest<Body> {
         builder.extension(PathParameters(path_parameters));
         builder.extension(StageVariables(stage_variables));
 
-        builder.body(match body {
-            Some(b) => if is_base64_encoded {
-                Body::from(::base64::decode(&b).unwrap()) // :|
-            } else {
-                Body::from(b.as_str())
-            },
-            _ => Body::from(())
-        }).expect("failed to build request")
+        builder
+            .body(match body {
+                Some(b) => if is_base64_encoded {
+                    Body::from(::base64::decode(&b).unwrap()) // todo: base64 may fail
+                } else {
+                    Body::from(b.as_str())
+                },
+                _ => Body::from(()),
+            })
+            .expect("failed to build request")
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use rust_http::Request as HttpRequest;
-    use RequestExt;
     use super::GatewayRequest;
+    use RequestExt;
+    use rust_http::Request as HttpRequest;
+    use std::collections::HashMap;
 
     #[test]
     fn requests_convert() {
