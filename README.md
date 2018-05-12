@@ -21,7 +21,7 @@ lando = "0.1"
 cpython = "0.1"
 ```
 
-> 💡 You may be new to the `cdylib` crate type. This allows rust to [link](https://doc.rust-lang.org/reference/linkage.html) your compile your application as a shared object file `*.so` allows it to be included in the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
+> 💡 You may be new to the `cdylib` crate type. This allows rust compile and [link](https://doc.rust-lang.org/reference/linkage.html) your application as a shared object file `*.so` allows it to be included in the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
 
 ### 🚀 deploy
 
