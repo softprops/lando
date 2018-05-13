@@ -9,7 +9,9 @@
 
 ## 🤔 about
 
-A number of really great http server crates exist in the [Rust ecosystem](https://crates.io/categories/network-programming).
+Lando is a crate for HTTP server application.
+
+A number of really great HTTP server crates exist in the [Rust ecosystem](https://crates.io/categories/web-programming::http-server).
 You should check them out!
 A property they all share is providing both interfaces for authoring applications,
 as well a configuring a server to run your application.
@@ -18,14 +20,14 @@ monitor and manage operations and uptime for.
 
 Lando is different. Lando's focus is purely on your application.
 
-The server, host management, and operations are all things which fall under the
+Servers, host management, and operations are all things which fall under the
 the umbrella of
-[undifferntiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/).
-In otherwords, these are all things that do no really set you apart. Fortuntely,
+[undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/).
+In other words, these are all things that do no really set you apart. Fortuntely,
 there are services like AWS lambda which manage these for you so that you can instead
 focus on what does differeniate you, your application.
 
-Lando is designed to within strong existing ecosystems, with Rust as well as
+Lando is designed to work within strong existing ecosystems, both with Rust as well as
 the strong serverless ecosystems that extend beyond Rust ( make some friends! ).
 
 Lando's interfaces are based the [http](https://crates.io/crates/http) crate
@@ -36,12 +38,13 @@ provides needed machinery to easily embed a rust application with one of lamdbas
 python 3.6.
 
 A large and mature ecosystem of tooling already exists that works well with AWS lambda,
-with flowflow tools like [the serverless toolkit](https://serverless.com/).
-Lando does not intend to replace these but instead to work well with them 👫🏿
+including flowflow tools like [the serverless toolkit](https://serverless.com/).
+Lando does not intend to replace these but instead to work well with them 👫🏾.
 
-You may ask what makes suitable for Lambda? The AWS cost model for lambda is based on size and speed.
+You may ask what makes Rust a suitable choice for Lambda?
+The AWS cost model for lambda is based on two factors: size and speed.
 Lambda has a pay per usage cost model billing based on function size and execution time.
-As a systems language is well designed specifically for these needs. As a highly embeddable
+As a systems language, Rust is well designed specifically for these needs. As a highly embeddable
 language, its interop story for runtimes like python's is 💖.
 
 What this means for developers and organizations you is cost savings for engineers in
@@ -64,6 +67,21 @@ cpython = "0.1"
 ```
 
 > 💡 You may be new to the `cdylib` crate type. This allows rust compile and [link](https://doc.rust-lang.org/reference/linkage.html) your application as a shared object file `*.so` allows it to be included in the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
+
+## 👩‍🔬 create
+
+Lando defines a single macro named `gateway!` which exports a Rust function or
+closure to a cpython initializer for use within an aws lambda.
+
+```rust
+#[macro_use(gateway)] extern crate lando;
+#[macro_use] extern crate cpython;
+
+gateway!(|request, _context| {
+  println!("{:?}", request);
+  Ok(lando::Response::new(()))
+);
+```
 
 ## 🚀 deploy
 
