@@ -30,18 +30,17 @@ focus on what does differeniate you, your application.
 Lando is designed to work within strong existing ecosystems, both with Rust as well as
 the strong serverless ecosystems that extend beyond Rust ( make some friends! ).
 
-Lando's interfaces are based the [http](https://crates.io/crates/http) crate
-which is designed as a framework agnostistic and extensible http library and extends
+Lando's interfaces are based the [http](https://crates.io/crates/http) crate, designed as a framework-agnostistic and extensible http library, and extends
 the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
-provides needed machinery to easily embed a rust application with one of lamdbas
+provides needed machinery to easily embed a rust application with one of lamdba's
 [lowest overhead runtimes](https://theburningmonk.com/2017/06/aws-lambda-compare-coldstart-time-with-different-languages-memory-and-code-sizes/),
 python 3.6.
 
-A large and mature ecosystem of tooling already exists that works well with AWS lambda,
-including flowflow tools like [the serverless toolkit](https://serverless.com/).
+A large and mature ecosystem of tooling for AWS lambda already exists and works well,
+including flowflow tools like [the serverless toolkit](https://serverless.com/framework/).
 Lando does not intend to replace these but instead to work well with them 👫🏾.
 
-You may ask what makes Rust a suitable choice for Lambda?
+You may ask, what makes Rust a suitable choice for Lambda?
 The AWS cost model for lambda is based on two factors: size and speed.
 Lambda has a pay per usage cost model billing based on function size and execution time.
 As a systems language, Rust is well designed specifically for these needs. As a highly embeddable
@@ -50,7 +49,6 @@ language, its interop story for runtimes like python's is 💖.
 What this means for developers and organizations you is cost savings for engineers in
 in terms of time spent focusing on applications an cost savings for organizations
 on effcient spending.
-
 
 ## 📦  install
 
