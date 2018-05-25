@@ -119,8 +119,6 @@ pub use rust_http::Response;
 /// Result type for gateway functions
 pub type Result = StdResult<Response<Body>, Box<StdError>>;
 
-pub struct Context<'a>(LambdaContext<'a>);
-
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
 #[doc(hidden)]
