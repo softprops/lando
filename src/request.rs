@@ -22,13 +22,13 @@ pub(crate) struct GatewayRequest {
     pub stage_variables: HashMap<String, String>,
     pub body: Option<String>,
     pub is_base64_encoded: bool,
-    pub request_context: Context,
+    pub request_context: RequestContext,
 }
 
 /// API Gateway request context
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Context {
+pub struct RequestContext {
     pub path: String,
     pub account_id: String,
     pub resource_id: String,
@@ -36,8 +36,25 @@ pub struct Context {
     pub request_id: String,
     pub resource_path: String,
     pub http_method: String,
+    //pub authorizer: HashMap<String, String>,
     pub api_id: String,
-    // todo: identity
+    pub identity: Identity,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Identity {
+    source_ip: String,
+    cognito_identity_id: Option<String>,
+    cognito_identity_pool_id: Option<String>,
+    cognito_authentication_provider: Option<String>,
+    cognito_authentication_type: Option<String>,
+    account_id: Option<String>,
+    caller: Option<String>,
+    api_key: Option<String>,
+    user: Option<String>,
+    user_agent: Option<String>,
+    user_arn: Option<String>,
 }
 
 /// deserializes (json) null values to empty hashmap

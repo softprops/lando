@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use body::Body;
-use request::GatewayRequest;
+use request::{GatewayRequest, RequestContext};
 use response::GatewayResponse;
 use rust_http::{Request as HttpRequest, Response as HttpResponse};
 
@@ -25,6 +25,8 @@ pub trait RequestExt {
     fn path_parameters(&self) -> HashMap<String, String>;
     /// Return stage variables associated with the API gateway request
     fn stage_variables(&self) -> HashMap<String, String>;
+    /// Return request context assocaited with the API gateway request
+    fn request_context(&self) -> RequestContext;
 }
 
 impl<T> RequestExt for HttpRequest<T> {
@@ -46,6 +48,13 @@ impl<T> RequestExt for HttpRequest<T> {
             .map(|ext| ext.0.clone())
             .unwrap_or(Default::default())
     }
+
+    fn request_context(&self) -> RequestContext {
+        self.extensions()
+            .get::<RequestContext>()
+            .map(|ext| ext.clone())
+            .unwrap_or(Default::default())
+    }
 }
 
 // resolve a gateway reqponse for an http::Response
@@ -58,7 +67,12 @@ where
         let headers = value
             .headers()
             .into_iter()
-            .map(|(k, v)| (k.as_str().to_owned(), v.to_str().unwrap().to_owned()))
+            .map(|(k, v)| {
+                (
+                    k.as_str().to_owned(),
+                    v.to_str().unwrap_or_default().to_owned(),
+                )
+            })
             .collect::<HashMap<String, String>>();
 
         GatewayResponse {
@@ -73,7 +87,6 @@ where
     }
 }
 
-// resolve a http::Request from a gatway request
 impl From<GatewayRequest> for HttpRequest<Body> {
     fn from(value: GatewayRequest) -> Self {
         let GatewayRequest {
@@ -85,7 +98,7 @@ impl From<GatewayRequest> for HttpRequest<Body> {
             stage_variables,
             body,
             is_base64_encoded,
-            request_context, // todo: expose this as an ext
+            request_context,
         } = value;
 
         // build an http::Result from a lando::Request
@@ -104,11 +117,13 @@ impl From<GatewayRequest> for HttpRequest<Body> {
         builder.extension(QueryStringParameters(query_string_parameters));
         builder.extension(PathParameters(path_parameters));
         builder.extension(StageVariables(stage_variables));
+        builder.extension(request_context);
 
         builder
             .body(match body {
                 Some(b) => if is_base64_encoded {
-                    Body::from(::base64::decode(&b).unwrap()) // todo: base64 may fail
+                    // todo: document failure behavior
+                    Body::from(::base64::decode(&b).unwrap_or_default())
                 } else {
                     Body::from(b.as_str())
                 },
