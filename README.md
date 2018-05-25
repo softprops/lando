@@ -43,7 +43,7 @@ Lando does not intend to replace these but instead to work well with them ðŸ‘«ðŸ
 The AWS [cost model for lambda](https://aws.amazon.com/lambda/pricing/)
 is largely based on two factors: memory size and speed.
 The CPU provided to applications is proportional to memory size requested.
-Lambda has a pay per usage cost model billing favors applications that are fast and
+Lambda has a pay per usage cost model billing favoring applications that are both fast and
 have low memory overheads.
 As a systems language, Rust is designed specifically for these kinds of needs. Rust
 has a very [tiny runtime](https://www.rust-lang.org/en-US/faq.html#does-rust-have-a-runtime),
