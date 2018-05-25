@@ -5,11 +5,11 @@
 ## [Documentation](https://softprops.github.io/lando)
 
 
-> this project is currently under construction 🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧
+>  🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧 this project is currently under construction
 
 ## 🤔 about
 
-Lando is a crate for **serverless** HTTP server applications.
+Lando is a crate for **serverless** HTTP applications.
 
 A number of really great HTTP server crates exist in the [Rust ecosystem](https://crates.io/categories/web-programming::http-server).
 You should check them out!
@@ -18,12 +18,12 @@ as well a configuring a server to run your application.
 A server which is then your reponsiblity to figure out how to host, scale,
 monitor and manage operations and uptime for.
 
-Lando is different. Lando's focus is purely on your application.
+Lando is different. Lando's focus is solely on applications.
 
 Servers, host management, and operations are all things which fall under the
 the umbrella of
 [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/).
-In other words, these are all things that do no really set you apart. Fortuntely,
+In other words, these are all things that do not really set you apart. Fortuntely,
 there are services like AWS lambda which manage these for you so that you can instead
 focus on what does differeniate you, your application.
 
@@ -32,7 +32,7 @@ the strong serverless ecosystems that extend beyond Rust ( make some friends! ).
 
 Lando's interfaces are based the [http](https://crates.io/crates/http) crate, designed as a framework-agnostistic and extensible http library, and extends
 the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
-provides needed machinery to easily embed a rust application with one of lamdba's
+provides needed lower level machinery for easily embeding a rust application with one of lamdba's
 [lowest overhead runtimes](https://theburningmonk.com/2017/06/aws-lambda-compare-coldstart-time-with-different-languages-memory-and-code-sizes/),
 python 3.6.
 
