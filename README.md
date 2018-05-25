@@ -11,10 +11,9 @@ gateway!(|request, _| {
 );
 ```
 
-
->  🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧 this project is currently under construction
-
 ## 🤔 about
+
+ 🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧 this project is currently under construction
 
 Lando is a crate for **serverless** HTTP applications.
 
