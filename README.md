@@ -1,6 +1,6 @@
 # lando [![Build Status](https://travis-ci.org/softprops/lando.svg?branch=master)](https://travis-ci.org/softprops/lando) [![Coverage Status](https://coveralls.io/repos/github/softprops/lando/badge.svg)](https://coveralls.io/github/softprops/lando) [![crates.io](https://img.shields.io/crates/v/lando.svg)](https://crates.io/crates/lando) [![docs.rs](https://docs.rs/lando/badge.svg)](https://docs.rs/lando) [![Master API docs](https://img.shields.io/badge/docs-master-green.svg)](https://softprops.github.io/lando)
 
-> aws lambda gateway api trigger interfaces for [Rustlang](https://www.rust-lang.org) applications
+> aws lambda gateway api lambda interfaces for [Rustlang](https://www.rust-lang.org) applications
 
 ```rust
 #[macro_use] extern crate cpython;
@@ -15,7 +15,7 @@ gateway!(|_, _| {
 
  🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧 this project is currently under construction
 
-Lando is a crate for **serverless** HTTP applications.
+Lando is a crate for **serverless** rustlang HTTP applications.
 
 > A number of really great HTTP server crates exist within the [Rust ecosystem](https://crates.io/categories/web-programming::http-server).
 You should check them out!
@@ -39,11 +39,17 @@ A large and mature ecosystem of tooling for AWS lambda already exists and works 
 including flowflow tools like [the serverless toolkit](https://serverless.com/framework/).
 Lando does not intend to replace these but instead to work well with them 👫🏾.
 
-> 💡 You may be asking yourself, what makes Rust a suitable choice for Lambda?
-The AWS cost model for lambda is based on two factors: size and speed.
-Lambda has a pay per usage cost model billing based on function size and execution time.
-As a systems language, Rust is designed specifically for these kinds of needs. As a highly embeddable
-language, its interop story for runtimes like python's is 💖.
+> 💡 You may be asking yourself, what makes Rust a good choice for Lambda?
+The AWS [cost model for lambda](https://aws.amazon.com/lambda/pricing/)
+is largely based on two factors: memory size and speed.
+The CPU provided to applications is proportional to memory size requested.
+Lambda has a pay per usage cost model billing favors applications that are fast and
+have low memory overheads.
+As a systems language, Rust is designed specifically for these kinds of needs. Rust
+has a very [tiny runtime](https://www.rust-lang.org/en-US/faq.html#does-rust-have-a-runtime),
+manages memory [very effciently](https://www.rust-lang.org/en-US/faq.html#is-rust-garbage-collected),
+and is [extremely fast](https://www.rust-lang.org/en-US/faq.html#how-fast-is-rust).
+. As a highly embeddable language, its interop story for runtimes like python's is 💖.
 
 ## 📦  install
 
