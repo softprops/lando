@@ -3,7 +3,7 @@
 > aws lambda gateway api trigger interfaces for [Rustlang](https://www.rust-lang.org) applications
 
 ```rust
-#[macro_use(gateway)] extern crate lando;
+#[macro_use] extern crate lando;
 #[macro_use] extern crate cpython;
 
 gateway!(|_, _| {
