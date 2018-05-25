@@ -18,14 +18,7 @@ as well a configuring a server to run your application.
 A server which is then your reponsiblity to figure out how to host, scale,
 monitor and manage operations and uptime for.
 
-Lando is different. Lando's focus is solely on applications.
-
-Servers, host management, and operations are all things which fall under the
-the umbrella of
-[undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/).
-In other words, these are all things that do not really set you apart. Fortuntely,
-there are services like AWS lambda which manage these for you so that you can instead
-focus on what does differeniate you, your application.
+Lando is different. Lando's focus is solely on applications. Freeing you from the toil of [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/).
 
 Lando is designed to work within strong existing ecosystems, both with Rust as well as
 the strong serverless ecosystems that extend beyond Rust ( make some friends! ).
