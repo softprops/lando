@@ -9,7 +9,7 @@
 
 ## 🤔 about
 
-Lando is a crate for **serverless* HTTP server applications.
+Lando is a crate for **serverless** HTTP server applications.
 
 A number of really great HTTP server crates exist in the [Rust ecosystem](https://crates.io/categories/web-programming::http-server).
 You should check them out!
