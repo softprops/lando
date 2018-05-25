@@ -9,6 +9,7 @@ repository = "https://github.com/softprops/gateway"
 keywords = ["serverless", "aws", "lambda"]
 license = "MIT"
 readme = "README.md"
+categories = ["network-programming", "web-programming::http-server"]
 
 [badges]
 travis-ci = { repository = "softprops/gateway" }
