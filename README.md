@@ -64,11 +64,11 @@ lando = "0.1"
 cpython = "0.1"
 ```
 
-> 💡 You may be new to the `cdylib` crate type. This allows rust compile and [link](https://doc.rust-lang.org/reference/linkage.html) your application as a shared object file `*.so` allows it to be included in the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
+> 💡 You may be new to the `cdylib` and `crate-type` lib attributes. This informs rustc to [link](https://doc.rust-lang.org/reference/linkage.html) and produce a shared object ( `*.so` ) file allowing your rustlang application to be embedded within the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
 
 ## 👩‍🏭 create
 
-Lando defines a single macro named `gateway!` which exports a Rust function or
+Lando exports a macro named `gateway!` which in turn, exports a Rust function or
 closure to a cpython initializer for use within an aws lambda.
 
 ```rust
@@ -83,11 +83,5 @@ gateway!(|request, _context| {
 
 ## 🚀 deploy
 
-## Roadmap
-
-```
-[x] expose typesafe interface for API gateway handlers
-[ ] expose API gateway interface adapting to Rust's http crate
-```
 
 Doug Tangren (softprops) 2018
