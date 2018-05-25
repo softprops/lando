@@ -1,5 +1,9 @@
 //! provides a http request nad response body entity interface
 
+// Std
+use std::borrow::Cow;
+
+// Third Party
 use bytes::Bytes;
 
 /// Reprentation of reques and response bodies
@@ -42,5 +46,25 @@ impl<'a> From<&'a [u8]> for Body {
 impl From<String> for Body {
     fn from(b: String) -> Self {
         Body::Bytes(Bytes::from(b))
+    }
+}
+
+impl From<Cow<'static, str>> for Body {
+    #[inline]
+    fn from(cow: Cow<'static, str>) -> Body {
+        match cow {
+            Cow::Borrowed(b) => Body::from(b),
+            Cow::Owned(o) => Body::from(o),
+        }
+    }
+}
+
+impl From<Cow<'static, [u8]>> for Body {
+    #[inline]
+    fn from(cow: Cow<'static, [u8]>) -> Body {
+        match cow {
+            Cow::Borrowed(b) => Body::from(b),
+            Cow::Owned(o) => Body::from(o),
+        }
     }
 }
