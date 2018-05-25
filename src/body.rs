@@ -5,11 +5,14 @@ use std::borrow::Cow;
 
 // Third Party
 use bytes::Bytes;
+use std::ops::Deref;
 
-/// Reprentation of reques and response bodies
+/// Reprentation of request and response bodies
 #[derive(Debug)]
 pub enum Body {
+    /// An empty body
     Empty,
+    /// A body containing some bytes
     Bytes(Bytes),
 }
 
@@ -65,6 +68,25 @@ impl From<Cow<'static, [u8]>> for Body {
         match cow {
             Cow::Borrowed(b) => Body::from(b),
             Cow::Owned(o) => Body::from(o),
+        }
+    }
+}
+
+impl Deref for Body {
+    type Target = [u8];
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        self.as_ref()
+    }
+}
+
+impl AsRef<[u8]> for Body {
+    #[inline]
+    fn as_ref(&self) -> &[u8] {
+        match self {
+            Body::Empty => &[],
+            Body::Bytes(ref bytes) => bytes,
         }
     }
 }

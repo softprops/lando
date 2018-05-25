@@ -3,8 +3,8 @@
 > aws lambda gateway api trigger interfaces for [Rustlang](https://www.rust-lang.org) applications
 
 ```rust
-#[macro_use] extern crate lando;
 #[macro_use] extern crate cpython;
+#[macro_use] extern crate lando;
 
 gateway!(|_, _| {
   Ok(lando::Response::new("Hello, what have we here?"))
@@ -67,14 +67,17 @@ Lando exports a macro named `gateway!` which in turn, exports a Rust function or
 closure to a cpython initializer for use within an aws lambda.
 
 ```rust
-#[macro_use(gateway)] extern crate lando;
 #[macro_use] extern crate cpython;
+#[macro_use] extern crate lando;
 
 gateway!(|request, _context| {
   println!("{:?}", request);
   Ok(lando::Response::new(()))
 );
 ```
+
+This closure accepts an `http::Request` with a [lando::Body](http://lessis.me/lando/lando/enum.Body.html). This body can be dereferenced as
+a slice of bytes.
 
 ## 🚀 deploy
 
