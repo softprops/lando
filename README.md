@@ -9,7 +9,7 @@
 
 ## 🤔 about
 
-Lando is a crate for HTTP server application.
+Lando is a crate for **serverless* HTTP server applications.
 
 A number of really great HTTP server crates exist in the [Rust ecosystem](https://crates.io/categories/web-programming::http-server).
 You should check them out!
@@ -66,7 +66,7 @@ cpython = "0.1"
 
 > 💡 You may be new to the `cdylib` crate type. This allows rust compile and [link](https://doc.rust-lang.org/reference/linkage.html) your application as a shared object file `*.so` allows it to be included in the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
 
-## 👩‍🔬 create
+## 👩‍🏭 create
 
 Lando defines a single macro named `gateway!` which exports a Rust function or
 closure to a cpython initializer for use within an aws lambda.
