@@ -1,14 +1,16 @@
 //! Request types
 
+// Std
 use std::collections::HashMap;
 
+// Third Party
 use serde::{Deserialize, Deserializer};
 
 /// Representation of API Gateway proxy event data
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct Request {
-    pub resource: String,
+pub(crate) struct GatewayRequest {
+    //pub resource: String,
     pub path: String,
     pub http_method: String,
     pub headers: HashMap<String, String>,
@@ -20,19 +22,39 @@ pub struct Request {
     pub stage_variables: HashMap<String, String>,
     pub body: Option<String>,
     pub is_base64_encoded: bool,
-    pub request_context: Context,
+    pub request_context: RequestContext,
 }
 
 /// API Gateway request context
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Context {
+pub struct RequestContext {
     pub path: String,
     pub account_id: String,
     pub resource_id: String,
     pub stage: String,
     pub request_id: String,
+    pub resource_path: String,
+    pub http_method: String,
+    //pub authorizer: HashMap<String, String>,
     pub api_id: String,
+    pub identity: Identity,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Identity {
+    source_ip: String,
+    cognito_identity_id: Option<String>,
+    cognito_identity_pool_id: Option<String>,
+    cognito_authentication_provider: Option<String>,
+    cognito_authentication_type: Option<String>,
+    account_id: Option<String>,
+    caller: Option<String>,
+    api_key: Option<String>,
+    user: Option<String>,
+    user_agent: Option<String>,
+    user_arn: Option<String>,
 }
 
 /// deserializes (json) null values to empty hashmap
@@ -52,13 +74,12 @@ mod tests {
 
     use serde_json;
 
-    use Request;
-    use super::nullable_map;
+    use super::{nullable_map, GatewayRequest};
 
     #[test]
     fn implements_default() {
         assert_eq!(
-            Request {
+            GatewayRequest {
                 path: "/foo".into(),
                 ..Default::default()
             }.path,
@@ -76,7 +97,9 @@ mod tests {
 
         assert_eq!(
             serde_json::from_str::<Test>(r#"{"foo":null}"#).expect("failed to deserialize"),
-            Test { foo: HashMap::new() }
+            Test {
+                foo: HashMap::new(),
+            }
         )
     }
 

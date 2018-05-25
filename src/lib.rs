@@ -1,25 +1,34 @@
-//! Gateway extends the [crowbar](https://crates.io/crates/crowbar) crate making
-//! it possible to write type safe AWS Lambda functions in Rust that are invoked
-//! by [API gateway](https://aws.amazon.com/api-gateway/) events.
+//! Lando provides machinery for serverless HTTP Rust applications deployable on [AWS lambda](https://aws.amazon.com/lambda/).
 //!
-//! It exports native Rust functions as CPython modules making it possible to embed
-//! handlers within aws's python3.6 runtime.
+//! Lando extends the [crowbar](https://crates.io/crates/crowbar) crate with
+//! type safe interfaces exposing [API gateway](https://aws.amazon.com/api-gateway/) proxy events
+//! as standard Rust [http](https://crates.io/crates/http) types. For convenience,
+//! `lando` re-exports `http::Request` and `http::Response` types.
+//!
+//! AWS lambda is a ✨ **managed** ✨ service meaning that you do not need
+//! to own and operate any of the servers your application will run on, freeing
+//! you up to **focus on your application**, letting the platform scale
+//! your application to meet its needs.
+//!
+//! Lando exports Rust functions as native CPython modules making it possible to embed
+//! handlers within aws' [python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
 //!
 //! # Usage
 //!
-//! Add both `gateway` and `cpython `to your `Cargo.toml`:
+//! Add both `lando` and `cpython` as dependencies to your `Cargo.toml`
 //!
 //! ```toml
 //! [dependencies]
-//! gateway = "0.1"
+//! lando = "0.1"
 //! cpython = "0.1"
 //! ```
 //!
-//! Use macros from both crates:
+//!
+//! Within your lib, use the macros from both crates
 //!
 //! ```rust,ignore
 //! #[macro_use(gateway)]
-//! extern crate gateway;
+//! extern crate lando;
 //! // the following imports macros needed by the gateway macro
 //! #[macro_use]
 //! extern crate cpython;
@@ -28,26 +37,27 @@
 //! And write your function using the [gateway!](macro.gateway.html) macro:
 //!
 //! ```rust
-//! # #[macro_use(gateway)] extern crate gateway;
+//! # #[macro_use(gateway)] extern crate lando;
 //! # #[macro_use] extern crate cpython;
 //! # fn main() {
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
-//!     Ok(gateway::Response::default())
+//!     Ok(lando::Response::new(()))
 //! });
 //! # }
 //! ```
 //!
 //! # Packaging functions
 //!
-//! For your code to be usable in AWS Lambda's Python3.6 execution environment,
-//! you need to compile to
-//! a dynamic library with the necessary functions for CPython to run. The
-//! `gateway!` macro does
-//! most of this for you, but cargo still needs to know what to do.
+//! Lando targets AWS Lambda's Python3.6 runtime. For your code to be usable
+//! in this execution environment, you need to compile your application as
+//! a dynamic library allowing it to be embedded within CPython. The
+//! [gateway!](macro.gateway.html) macro does
+//! the all the integration for you, but cargo still needs
+//! to know the type of lib you are compiling.
 //!
-//! You can configure cargo to build a dynamic library with the following.
+//! You can configure cargo to build a dynamic library with the following toml.
 //! If you're using the
 //! `gateway!` macro as above, you need to use `lambda` for the library name
 //! (see the documentation
@@ -59,65 +69,89 @@
 //! crate-type = ["cdylib"]
 //! ```
 //!
-//! > Note: cdylib exports C interface from a Rust dynamic library.
+//! > 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
-//! > Link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
-//!
-//! `cargo build` will now build a `liblambda.so`. Put this in a zip file and
-//! upload it to an AWS Lambda function. Use the Python 3.6 execution environment with the handler
+//! `cargo build` will then produce an aws deployable `liblambda.so` binary.
+//! Package this file in a zip file and its now deployable as an AWS Lambda function.
+//! Be sure to use the the Python 3.6 execution environment with the handler
 //! configured as `liblambda.handler`.
 //!
 //! Because you're building a dynamic library, other libraries that you're dynamically linking
 //! against need to also be in the Lambda execution environment. The easiest way to do this is
-//! building in an environment similar to Lambda's, such as Amazon Linux. You can use an [EC2
-//! instance](https://aws.amazon.com/amazon-linux-ami/) or a [Docker
+//! building in an environment similar to Lambda's, like [this Docker
 //! container](https://hub.docker.com/r/lambci/lambda).
 //!
-
-extern crate crowbar;
+extern crate base64;
+extern crate bytes;
 extern crate cpython;
+extern crate crowbar;
+extern crate http as rust_http;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
 
+// Std
+use std::error::Error as StdError;
+use std::result::Result as StdResult;
+
+// Third Party
+use cpython::Python;
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
-use cpython::Python;
 pub use crowbar::LambdaContext;
 
-pub mod response;
-pub mod request;
+mod body;
+mod http;
+mod request;
+mod response;
 
-pub use response::Response;
-pub use request::Request;
+pub use body::Body;
+pub use http::RequestExt;
 
-/// Result type for API Gateway requests
-pub type GatewayResult = Result<Response, Box<std::error::Error>>;
+/// A re-exported version of `http::Request` with a type
+/// parameter for body fixed to type `lando::Body`
+pub type Request = rust_http::Request<Body>;
+
+/// A re-exported version of the `http::Response` type
+pub use rust_http::Response;
+
+/// Result type for gateway functions
+pub type Result = StdResult<Response<Body>, Box<StdError>>;
 
 // wrap crowbar handler in gateway handler
+// which works with http crate types lifting them into apigw types
 #[doc(hidden)]
-pub fn handler<F>(py: Python, f: F, py_event: PyObject, py_context: PyObject) -> PyResult<PyObject>
+pub fn handler<F, R>(
+    py: Python,
+    func: F,
+    py_event: PyObject,
+    py_context: PyObject,
+) -> PyResult<PyObject>
 where
-    F: FnOnce(Request, LambdaContext) -> GatewayResult,
+    F: FnOnce(Request, LambdaContext) -> StdResult<Response<R>, Box<StdError>>,
+    R: Into<Body>,
 {
     crowbar::handler(
         py,
-        |event, ctx| f(serde_json::from_value::<Request>(event)?, ctx),
+        |event, ctx| {
+            println!("{:?}", event);
+            let apigw = serde_json::from_value::<request::GatewayRequest>(event)?;
+            func(Request::from(apigw), ctx).map(response::GatewayResponse::from)
+        },
         py_event,
         py_context,
     )
 }
 
-#[macro_export]
-/// Macro to wrap a Lambda function handler for api gateway events.
+/// Macro to wrap a Lambda function handler for API gateway events.
 ///
-/// Lambda functions accept two arguments (the event, a `gateway::Request`, and the context, a
-/// `LambdaContext`) and returns a value (a serde_json `Value`). The function signature should look
+/// Lambda functions accept two arguments (the event, a `lando::Request`, and the context, a
+/// `LambdaContext`) and are expected to return a result containing `lando::Response`. The function signature should look
 /// like:
 ///
 /// ```rust,ignore
-/// fn handler(event: Request, context: LambdaContext) -> GatewayResult
+/// fn handler(request: Request, context: LambdaContext) -> Result
 /// ```
 ///
 /// To use this macro, you need to `macro_use` both crowbar *and* cpython, because crowbar
@@ -125,87 +159,92 @@ where
 ///
 /// ```rust,ignore
 /// #[macro_use(gateway)]
-/// extern crate gateway;
+/// extern crate lando;
 /// #[macro_use]
 /// extern crate cpython;
 /// ```
 ///
 /// # Examples
 ///
-/// You can wrap a closure with `gateway!`:
+/// You can export a lambda ready function by wrapping a closure with `gateway!`:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway!(|request, context| {
 ///     println!("{:?}", request);
-///     Ok(gateway::Response::default())
+///     Ok(lando::Response::new(()))
 /// });
 /// # }
 /// ```
 ///
-/// You can also define a named function:
+/// You can also the provide `gateway!` macro with a named function:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
-/// use gateway::{Request, Response, LambdaContext, GatewayResult};
+/// use lando::{LambdaContext, Request, Response, Result, Body};
 ///
-/// fn my_handler(request: Request, context: LambdaContext) -> GatewayResult {
+/// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
-///     Ok(Response::builder().body(":thumbsup:").build())
+///     Ok(Response::new(":thumbsup:".into()))
 /// }
 ///
-/// gateway!(my_handler);
+/// gateway!(handler);
 /// # }
 /// ```
 ///
-/// # Multiple handlers
+/// # Multiple functions
 ///
-/// You can define multiple handlers in the same module in a way similar to `match`:
+/// You can export multiple functions in the same module with a format similar to a `match`:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
+/// use lando::Response;
+///
 /// gateway! {
-///     "one" => |request, context| { Ok(gateway::Response::builder().body("1").build()) },
-///     "two" => |request, context| { Ok(gateway::Response::builder().body("2").build()) },
+///     "one" => |request, context| { Ok(Response::new("1")) },
+///     "two" => |request, context| { Ok(Response::new("2")) }
 /// };
 /// # }
 /// ```
 ///
 /// # Changing the dynamic library name
 ///
-/// If you need to change the name of the built dynamic library, you first need to change the
-/// `[lib]` section in Cargo.toml:
+/// Be default, lando assumes a library named "lambda", If you need to change the
+/// name of the resulting dynamic library that gets built,
+///  you first need to change the `[lib]` section in your Cargo.toml file
 ///
 /// ```toml
 /// [lib]
-/// name = "kappa"
+/// name = "solo"
 /// crate-type = ["cdylib"]
 /// ```
 ///
-/// You then also need to change the names of the library symbols, which you can do by extending
-/// upon the multiple handler version of `gateway!`:
+/// You then also need to change the names of the library indentifiers, expected by
+/// the [cpython crate](https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html),
+/// by using the following `gateway!` format
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate gateway;
+/// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
 /// # fn main() {
 /// gateway! {
-///     crate (libkappa, initlibkappa, PyInit_libkappa) {
+///     crate (libsolo, initlibsolo, PyInit_libsolo) {
 ///         "handler" => |request, context| {
-///            Ok(gateway::Response::builder().body(
-///               "hi from libkappa"
-///            ).build())
+///            Ok(lando::Response::new(
+///               "hello from libsolo"
+///            ))
 ///         }
 ///     }
 /// };
 /// # }
 /// ```
+#[macro_export]
 macro_rules! gateway {
     (@module ($module:ident, $py2:ident, $py3:ident)
      @handlers ($($handler:expr => $target:expr),*)) => {
@@ -228,20 +267,24 @@ macro_rules! gateway {
     (crate $module:tt { $($handler:expr => $target:expr),* }) => {
         gateway! { @module $module @handlers ($($handler => $target),*) }
     };
-
     (crate $module:tt { $($handler:expr => $target:expr,)* }) => {
         gateway! { @module $module @handlers ($($handler => $target),*) }
     };
-
     ($($handler:expr => $target:expr),*) => {
-        gateway! { @module (liblambda, initliblambda, PyInit_liblambda)
+        // conventions required by cpython crate
+        // https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html
+        // in the future concat_indents! would be the way to make this
+        // dynamic
+        // see also https://www.ncameron.org/blog/untitledconcat_idents-and-macros-in-ident-position/
+        // https://github.com/rust-lang/rust/issues/29599
+        gateway! { @module (liblambda,
+                            initliblambda,
+                            PyInit_liblambda)
                   @handlers ($($handler => $target),*) }
     };
-
     ($($handler:expr => $target:expr,)*) => {
         gateway! { $($handler => $target),* }
     };
-
     ($f:expr) => {
         gateway! { "handler" => $f, }
     };
