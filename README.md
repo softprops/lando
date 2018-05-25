@@ -7,7 +7,7 @@
 #[macro_use] extern crate cpython;
 
 gateway!(|_, _| {
-  Ok(lando::Response::new("Hello, what have we here?))
+  Ok(lando::Response::new("Hello, what have we here?"))
 );
 ```
 
