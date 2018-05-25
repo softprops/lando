@@ -6,7 +6,7 @@
 #[macro_use(gateway)] extern crate lando;
 #[macro_use] extern crate cpython;
 
-gateway!(|request, _| {
+gateway!(|_, _| {
   Ok(lando::Response::new("Hello, what have we here?))
 );
 ```
