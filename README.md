@@ -7,37 +7,42 @@
 #[macro_use] extern crate lando;
 
 gateway!(|_, _| {
-  Ok(lando::Response::new("Hello, what have we here?"))
-);
+  Ok(
+    lando::Response::new(
+      "Hello, what have we here?"
+      )
+    )
+});
 ```
 
 ## 🤔 about
 
- 🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧 this project is currently under construction
+ 🚧 👷🏿‍♀️ 👷🏽 👷‍♀️ 👷 🚧 this project is currently active under construction. expect changes.
 
 Lando is a crate for **serverless** rustlang HTTP applications.
 
-> A number of really great HTTP server crates exist within the [Rust ecosystem](https://crates.io/categories/web-programming::http-server).
-You should check them out!
-A common theme they all share is in providing interfaces for authoring applications,
-in addition to interfaces for configuring a server that listens on a port that hosts your application.
+> The rustlang ecosystem already has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
+You may also want check them out!
+A common theme they all share that they all provide interfaces for authoring applications,
+in addition to interfaces for configuring servers that listen on ports that exposes your application over network connections.
 A server which is then your reponsiblity to figure out how to host, scale,
 monitor and manage operations and uptime for.
 
-Lando is different. Lando's focus is solely on applications, freeing you from the toil of [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/).
+Lando is different. Lando's focus is solely on applications, freeing developers from the business and toil of the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with manging servers.
 
-Lando is designed to work the interfaces of strong existing ecosystems, both with Rust as well as
+Lando is designed to work with the interfaces of strong existing ecosystems, both with Rust as well as
 the strong serverless ecosystems that extend beyond Rust ( make some friends! ).
 
-Lando's interfaces are based the Rust community standard [http](https://crates.io/crates/http) crate, designed as a framework-agnostistic and extensible http library, and extends
+Lando's interfaces are based the Rust community standard [http](https://crates.io/crates/http) crate, extracted from the work of a number of successful projects and designed as a framework-agnostistic and extensible http library, and extends
 the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
 provides needed lower level machinery for easily embeding a rust application with one of lamdba's
 [lowest overhead runtimes](https://theburningmonk.com/2017/06/aws-lambda-compare-coldstart-time-with-different-languages-memory-and-code-sizes/),
-python 3.6.
+python 3.6. This allows to you take advantage of the growing ecosystem of crates
+build on top of standard crates.
 
 A large and mature ecosystem of tooling for AWS lambda already exists and works well,
-including flowflow tools like [the serverless toolkit](https://serverless.com/framework/).
-Lando does not intend to replace these but instead to work well with them 👫🏾.
+including workflow tools like [the serverless toolkit](https://serverless.com/framework/). Because these tools exist organizations already using them have a low barrier of introducing rustlang into their arsenel.
+Lando does not intend to replace these tools but instead to work well with them 👫🏾.
 
 > 💡 You may be asking yourself, what makes Rust a good choice for Lambda?
 The AWS [cost model for lambda](https://aws.amazon.com/lambda/pricing/)
@@ -49,7 +54,7 @@ As a systems language, Rust is designed specifically for these kinds of needs. R
 has a very [tiny runtime](https://www.rust-lang.org/en-US/faq.html#does-rust-have-a-runtime),
 manages memory [very effciently](https://www.rust-lang.org/en-US/faq.html#is-rust-garbage-collected),
 and is [extremely fast](https://www.rust-lang.org/en-US/faq.html#how-fast-is-rust).
-. As a highly embeddable language, its interop story for runtimes like python's is 💖.
+. As a highly embeddable language, its interop story for runtimes like python's is 💖. Be mindful that lando assumes you're exposing these applications through AWS API gateway which has its own [generous pricing model](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html).
 
 ## 📦  install
 
@@ -61,7 +66,7 @@ name = "lambda"
 crate-type = ["cdylib"]
 
 [dependencies]
-lando = "0.1"
+lando = "0.0"
 cpython = "0.1"
 ```
 
@@ -69,8 +74,8 @@ cpython = "0.1"
 
 ## 👩‍🏭 create
 
-Lando exports a macro named `gateway!` which in turn, exports a Rust function or
-closure to a cpython initializer for use within an aws lambda.
+Lando exports a macro named `gateway!` which in turn, injects a Rust function or
+closure to a cpython initializer making it ready for use within an aws lambda.
 
 ```rust
 #[macro_use] extern crate cpython;
@@ -79,7 +84,7 @@ closure to a cpython initializer for use within an aws lambda.
 gateway!(|request, _context| {
   println!("{:?}", request);
   Ok(lando::Response::new(()))
-);
+});
 ```
 
 This closure accepts an `http::Request` with a [lando::Body](http://lessis.me/lando/lando/enum.Body.html). This body can be dereferenced as

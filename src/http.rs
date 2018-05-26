@@ -1,29 +1,35 @@
-//! convertions to and from gateway types and http crate types
+//! convertions to and from internal gateway types and http crate types
 
+// Std
 use std::collections::HashMap;
 
+// Third Party
 use body::Body;
 use request::{GatewayRequest, RequestContext};
 use response::GatewayResponse;
 use rust_http::{Request as HttpRequest, Response as HttpResponse};
 
 /// API gateway pre-parsed http query string parameters
-pub struct QueryStringParameters(HashMap<String, String>);
+struct QueryStringParameters(HashMap<String, String>);
 
-/// API gateway extracted url path parameters
-pub struct PathParameters(HashMap<String, String>);
+/// API gateway pre-extracted url path parameters
+struct PathParameters(HashMap<String, String>);
 
-/// API gateway provided stage variables
-pub struct StageVariables(HashMap<String, String>);
+/// API gateway configured
+/// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+struct StageVariables(HashMap<String, String>);
 
-/// Extentions for `http::Request` objects that
+/// Extentions for `lando::Request` objects that
 /// provide access to API gateway features
 pub trait RequestExt {
-    /// Return query string parameters associated with the API gateway request
+    /// Return pre-parsed http query string parameters
+    /// associated with the API gateway request
     fn query_string_parameters(&self) -> HashMap<String, String>;
-    /// Return path parameters associated with the API gateway request
+    /// Return pre-extracted path parameters
+    /// associated with the API gateway request
     fn path_parameters(&self) -> HashMap<String, String>;
-    /// Return stage variables associated with the API gateway request
+    /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+    /// associated with the API gateway request
     fn stage_variables(&self) -> HashMap<String, String>;
     /// Return request context assocaited with the API gateway request
     fn request_context(&self) -> RequestContext;

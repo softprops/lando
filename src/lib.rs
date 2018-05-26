@@ -144,9 +144,9 @@ where
     )
 }
 
-/// Macro to wrap a Lambda function handler for API gateway events.
+/// Macro that exposes a Lambda function handler for AWS API gateway proxy event triggers.
 ///
-/// Lambda functions accept two arguments (the event, a `lando::Request`, and the context, a
+/// Lambda functions accept two arguments (the event, a `lando::Request`, and a context, a
 /// `LambdaContext`) and are expected to return a result containing `lando::Response`. The function signature should look
 /// like:
 ///
@@ -166,7 +166,7 @@ where
 ///
 /// # Examples
 ///
-/// You can export a lambda ready function by wrapping a closure with `gateway!`:
+/// You can export a lambda-ready function by wrapping a closure with `gateway!`:
 ///
 /// ```rust
 /// # #[macro_use(gateway)] extern crate lando;
@@ -179,7 +179,7 @@ where
 /// # }
 /// ```
 ///
-/// You can also the provide `gateway!` macro with a named function:
+/// You can also the provide `gateway!` macro with a named function
 ///
 /// ```rust
 /// # #[macro_use(gateway)] extern crate lando;
