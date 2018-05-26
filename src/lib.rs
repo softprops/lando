@@ -1,11 +1,11 @@
-//! Lando provides machinery for serverless HTTP Rust applications deployable on [AWS lambda](https://aws.amazon.com/lambda/).
+//! Lando provides building blocks for serverless HTTP Rust applications deployable on [AWS lambda](https://aws.amazon.com/lambda/).
 //!
 //! Lando extends the [crowbar](https://crates.io/crates/crowbar) crate with
-//! type safe interfaces exposing [API gateway](https://aws.amazon.com/api-gateway/) proxy events
+//! type-safe interfaces exposing [API gateway](https://aws.amazon.com/api-gateway/) proxy events
 //! as standard Rust [http](https://crates.io/crates/http) types. For convenience,
 //! `lando` re-exports `http::Request` and `http::Response` types.
 //!
-//! AWS lambda is a ✨ **managed** ✨ service meaning that you do not need
+//! AWS lambda is a ✨ **managed** ✨ compute service meaning that you do not need
 //! to own and operate any of the servers your application will run on, freeing
 //! you up to **focus on your application**, letting the platform scale
 //! your application to meet its needs.
@@ -19,26 +19,25 @@
 //!
 //! ```toml
 //! [dependencies]
-//! lando = "0.1"
 //! cpython = "0.1"
+//! lando = "0.1"
 //! ```
 //!
-//!
-//! Within your lib, use the macros from both crates
+//! Within your library, use the macros from both crates
 //!
 //! ```rust,ignore
-//! #[macro_use(gateway)]
-//! extern crate lando;
 //! // the following imports macros needed by the gateway macro
 //! #[macro_use]
 //! extern crate cpython;
+//! #[macro_use(gateway)]
+//! extern crate lando;
 //! ```
 //!
 //! And write your function using the [gateway!](macro.gateway.html) macro:
 //!
 //! ```rust
-//! # #[macro_use(gateway)] extern crate lando;
 //! # #[macro_use] extern crate cpython;
+//! # #[macro_use(gateway)] extern crate lando;
 //! # fn main() {
 //! gateway!(|_request, context| {
 //!     println!("hi cloudwatch logs, this is {}", context.function_name());
@@ -55,7 +54,7 @@
 //! a dynamic library allowing it to be embedded within CPython. The
 //! [gateway!](macro.gateway.html) macro does
 //! the all the integration for you, but cargo still needs
-//! to know the type of lib you are compiling.
+//! to know what type of lib you are compiling.
 //!
 //! You can configure cargo to build a dynamic library with the following toml.
 //! If you're using the
@@ -71,8 +70,8 @@
 //!
 //! > 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
-//! `cargo build` will then produce an aws deployable `liblambda.so` binary.
-//! Package this file in a zip file and its now deployable as an AWS Lambda function.
+//! `cargo build` will then produce an aws deployable `liblambda.so` binary artifact.
+//! Package this in a zip file and its now deployable as an AWS Lambda function.
 //! Be sure to use the the Python 3.6 execution environment with the handler
 //! configured as `liblambda.handler`.
 //!
@@ -135,7 +134,6 @@ where
     crowbar::handler(
         py,
         |event, ctx| {
-            println!("{:?}", event);
             let apigw = serde_json::from_value::<request::GatewayRequest>(event)?;
             func(Request::from(apigw), ctx).map(response::GatewayResponse::from)
         },
