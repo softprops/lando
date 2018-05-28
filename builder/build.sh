@@ -21,4 +21,3 @@ cd "$CARGO_TARGET_DIR"/release
         zip lambda.zip "$file"
     done
 ) 1>&2
-exec cat lambda.zip
