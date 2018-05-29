@@ -1,4 +1,5 @@
 sudo: false
+dist: trusty
 language: rust
 matrix:
   fast_finish: true
