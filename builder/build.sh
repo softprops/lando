@@ -9,7 +9,6 @@ export CARGO_TARGET_DIR=$PWD/target/lambda
         yum install -y "$@"
     fi
     . $HOME/.cargo/env
-    cargo test ${CARGO_FLAGS:-} --release
     cargo build ${CARGO_FLAGS:-} --release
 ) 1>&2
 cd "$CARGO_TARGET_DIR"/release
