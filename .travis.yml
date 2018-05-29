@@ -9,7 +9,7 @@ matrix:
   allow_failures:
     - rust: nightly
 script:
-  - RUSTFLAGS="$RUSTFLAGS -C link-dead-code" cargo test
+  - cargo test
 before_cache:
   - chmod -R a+r $HOME/.cargo
 before_install:
@@ -39,10 +39,10 @@ after_success:
   - >-
     [ $TRAVIS_EVENT_TYPE != "cron" ] && [ $TRAVIS_RUST_VERSION = stable ] && [
     $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ] && (ls
-    target/debug && RUSTFLAGS="-C link-dead-code" cargo test --no-run && for
-    file in target/debug/lando-*; do if [[ "${file: -2}" != ".d" ]]; then mkdir
-    -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib
-    --verify "target/cov/$(basename $file)" "$file"; fi; done && kcov
+    target/debug && cargo test --no-run && for file in target/debug/lando-*; do
+    if [[ "${file: -2}" != ".d" ]]; then mkdir -p "target/cov/$(basename
+    $file)"; kcov --exclude-pattern=/.cargo,/usr/lib --verify
+    "target/cov/$(basename $file)" "$file"; fi; done && kcov
     --coveralls-id=$TRAVIS_JOB_ID --merge target/cov target/cov/* && echo
     "covered") || true
   - >-
