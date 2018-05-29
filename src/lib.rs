@@ -107,9 +107,10 @@ mod response;
 
 pub use body::Body;
 pub use http::RequestExt;
+pub use request::GatewayRequest;
 
 /// A re-exported version of `http::Request` with a type
-/// parameter for body fixed to type `lando::Body`
+/// parameter for body fixed to type [lando::Body](enum.Body.html)
 pub type Request = rust_http::Request<Body>;
 
 /// A re-exported version of the `http::Response` type
@@ -144,8 +145,8 @@ where
 
 /// Macro that exposes a Lambda function handler for AWS API gateway proxy event triggers.
 ///
-/// Lambda functions accept two arguments (the event, a `lando::Request`, and a context, a
-/// `LambdaContext`) and are expected to return a result containing `lando::Response`. The function signature should look
+/// Lambda functions accept two arguments (the event, a [lando::Request](type.Request.html), and a context, a
+/// `LambdaContext`) and are expected to return a result containing [lando::Response](struct.Response). The function signature should look
 /// like:
 ///
 /// ```rust,ignore

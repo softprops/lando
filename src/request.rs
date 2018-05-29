@@ -7,9 +7,12 @@ use std::collections::HashMap;
 use serde::{Deserialize, Deserializer};
 
 /// Representation of API Gateway proxy event data
+/// this should really be pub(crate) but is bump for
+/// bench mark testing
+#[doc(hidden)]
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct GatewayRequest {
+pub struct GatewayRequest {
     //pub resource: String,
     pub path: String,
     pub http_method: String,
@@ -21,6 +24,7 @@ pub(crate) struct GatewayRequest {
     #[serde(deserialize_with = "nullable_map")]
     pub stage_variables: HashMap<String, String>,
     pub body: Option<String>,
+    #[serde(default)]
     pub is_base64_encoded: bool,
     pub request_context: RequestContext,
 }
@@ -29,7 +33,7 @@ pub(crate) struct GatewayRequest {
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestContext {
-    pub path: String,
+    //pub path: String,
     pub account_id: String,
     pub resource_id: String,
     pub stage: String,
