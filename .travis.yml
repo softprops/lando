@@ -1,4 +1,4 @@
-sudo: true
+sudo: required
 language: rust
 matrix:
   fast_finish: true
