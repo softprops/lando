@@ -1,5 +1,5 @@
 #!/bin/bash
-# test, build and pack a rust lambda library
+# build and pack a rust lambda library
 
 set -euo pipefail
 mkdir -p target/lambda
