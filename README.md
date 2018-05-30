@@ -30,7 +30,7 @@ Lando is designed to work _with_ the interfaces of strong existing ecosystems, b
 
 Lando's interfaces are based the Rust community standard [http](https://crates.io/crates/http) crate. This was extracted from the work of a number of successful projects and was designed as a framework-agnostistic and extensible http library. Lando extends
 the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
-provides needed lower level machinery for easily embeding a rust application with one of lamdba's
+provides needed lower level machinery for easily embeding a rust application with one of lambda's
 [lowest overhead runtimes](https://theburningmonk.com/2017/06/aws-lambda-compare-coldstart-time-with-different-languages-memory-and-code-sizes/),
 python 3.6. This allows to you take advantage of the growing ecosystem of crates
 build on top of these standard crates.
