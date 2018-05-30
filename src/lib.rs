@@ -5,13 +5,12 @@
 //! as standard Rust [http](https://crates.io/crates/http) types. For convenience,
 //! `lando` re-exports `http::Request` and `http::Response` types.
 //!
-//! AWS lambda is a ✨ **managed** ✨ compute service meaning that you do not need
-//! to own and operate any of the servers your application will run on, freeing
-//! you up to **focus on your application**, letting the platform scale
-//! your application to meet its needs.
+//! AWS lambda is a ✨ **fully managed** ✨ compute service meaning that you do not need
+//! to own or operate any of the servers your application will run on, freeing
+//! you up to **focus on your application**. You can consider Lambda AWS's Function-As-A-Service offering.
 //!
 //! Lando exports Rust functions as native CPython modules making it possible to embed
-//! handlers within aws' [python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
+//! handlers within AWS' [python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
 //!
 //! # Usage
 //!
@@ -23,7 +22,7 @@
 //! lando = "0.1"
 //! ```
 //!
-//! Within your library, use the macros from both crates
+//! Within your libraries source, use the macros from both crates
 //!
 //! ```rust,ignore
 //! // the following imports macros needed by the gateway macro
@@ -33,14 +32,14 @@
 //! extern crate lando;
 //! ```
 //!
-//! And write your function using the [gateway!](macro.gateway.html) macro:
+//! And write your function using the [gateway!](macro.gateway.html) macro
 //!
 //! ```rust
 //! # #[macro_use] extern crate cpython;
 //! # #[macro_use(gateway)] extern crate lando;
 //! # fn main() {
 //! gateway!(|_request, context| {
-//!     println!("hi cloudwatch logs, this is {}", context.function_name());
+//!     println!("👋 cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
 //!     Ok(lando::Response::new(()))
 //! });
@@ -70,14 +69,14 @@
 //!
 //! > 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
-//! `cargo build` will then produce an aws deployable `liblambda.so` binary artifact.
-//! Package this in a zip file and its now deployable as an AWS Lambda function.
+//! `cargo build` will then produce an AWS-deployable `liblambda.so` binary artifact.
+//! Package this file in a zip file and its now deployable as an AWS Lambda function!
 //! Be sure to use the the Python 3.6 execution environment with the handler
 //! configured as `liblambda.handler`.
 //!
 //! Because you're building a dynamic library, other libraries that you're dynamically linking
-//! against need to also be in the Lambda execution environment. The easiest way to do this is
-//! building in an environment similar to Lambda's, like [this Docker
+//! against need to also be in the Lambda execution environment. The easiest way to achive this is
+//! by building in an environment similar to Lambda's, like [this Docker
 //! container](https://hub.docker.com/r/lambci/lambda).
 //!
 extern crate base64;
@@ -146,7 +145,7 @@ where
 /// Macro that exposes a Lambda function handler for AWS API gateway proxy event triggers.
 ///
 /// Lambda functions accept two arguments (the event, a [lando::Request](type.Request.html), and a context, a
-/// `LambdaContext`) and are expected to return a result containing [lando::Response](struct.Response). The function signature should look
+/// `LambdaContext`) and are expected to return a result containing [lando::Response](struct.Response.html). The function signature should look
 /// like:
 ///
 /// ```rust,ignore
@@ -180,6 +179,12 @@ where
 ///
 /// You can also the provide `gateway!` macro with a named function
 ///
+/// The request argument is just a regular http::Request type but you can
+/// access API gateway features, like path and query string parameters, and
+/// stage variables by importing [lando::RequestExt`](trait.RequestExt.html)
+///
+/// The context argument is [same type](struct.LambdaContext.html) used within the crowbar crate
+///
 /// ```rust
 /// # #[macro_use(gateway)] extern crate lando;
 /// # #[macro_use] extern crate cpython;
@@ -188,7 +193,7 @@ where
 ///
 /// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
-///     Ok(Response::new(":thumbsup:".into()))
+///     Ok(Response::new("👍"))
 /// }
 ///
 /// gateway!(handler);
@@ -226,7 +231,9 @@ where
 ///
 /// You then also need to change the names of the library indentifiers, expected by
 /// the [cpython crate](https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html),
-/// by using the following `gateway!` format
+/// by using the following `gateway!` format. This pattern may no longer needed
+/// the std library's [concat_idents!](https://doc.rust-lang.org/std/macro.concat_idents.html)
+/// macro is stablized.
 ///
 /// ```rust
 /// # #[macro_use(gateway)] extern crate lando;

@@ -7,7 +7,7 @@ use std::borrow::Cow;
 use bytes::Bytes;
 use std::ops::Deref;
 
-/// Reprentation of request and response bodies
+/// Representation of http request and response bodies
 #[derive(Debug)]
 pub enum Body {
     /// An empty body
