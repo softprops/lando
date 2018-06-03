@@ -90,5 +90,21 @@ a slice of bytes.
 
 ## 🚀 deploy
 
+In order to deploy your app you will need to build it within a runtime compatible with the
+lambda python 3.6 env. A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience
+
+```bash
+$ docker run --rm \
+        -v ${PWD}:/code \
+        -v ${HOME}/.cargo/registry:/root/.cargo/registry \
+        -v ${HOME}/.cargo/git:/root/.cargo/git \
+        -e CARGO_FLAGS="--features python3-sys" \
+        softprops/lambda-rust
+```
+
+This will result in a deployable .so build artifact under a `target/lambda` directory
+
+This file can then be zipped up for deployment
+
 
 Doug Tangren (softprops) 2018
