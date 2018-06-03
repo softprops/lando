@@ -1,9 +1,12 @@
 VERSION ?= '0.0.0'
 RUST_VERSION ?= '1.26.1'
-TAG ?= 'softprops/lambda-rust:$(VERSION)-rust-$(RUST_VERSION)'
+REPO ?= 'softprops/lambda-rust'
+TAG ?= $(REPO):$(VERSION)-rust-$(RUST_VERSION)
 
 publish: build
 	docker push $(TAG)
+	docker push $(REPO):latest
 
 build:
 	docker build -t $(TAG) .
+	docker tag $(TAG) $(REPO):latest
