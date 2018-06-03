@@ -26,6 +26,7 @@ bytes = "0.4"
 crowbar = "0.2"
 cpython = "0.1"
 # https://github.com/ilianaw/rust-crowbar/issues/20
+# work around for odd openssl installation in lambda python 3.6 runtime
 python3-sys =  { version = "0.1.3", features = ["python-3-4"], optional = true }
 http = "0.1"
 serde = "1.0"
