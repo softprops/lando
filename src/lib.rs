@@ -77,7 +77,7 @@
 //! Because you're building a dynamic library, other libraries that you're dynamically linking
 //! against need to also be in the Lambda execution environment. The easiest way to achive this is
 //! by building in an environment similar to Lambda's, like [this Docker
-//! container](https://hub.docker.com/r/lambci/lambda).
+//! container](https://hub.docker.com/r/softprops/lambda-rust/).
 //!
 extern crate base64;
 extern crate bytes;
