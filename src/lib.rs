@@ -193,7 +193,7 @@ where
 ///
 /// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
-///     Ok(Response::new("👍"))
+///     Ok(Response::new("👍".into()))
 /// }
 ///
 /// gateway!(handler);
