@@ -202,7 +202,7 @@ where
 ///
 /// # Multiple functions
 ///
-/// You can export multiple functions in the same module with a format similar to a `match`:
+/// You can export multiple functions in the same module with a format similar to a `match` expression:
 ///
 /// ```rust
 /// # #[macro_use(gateway)] extern crate lando;
