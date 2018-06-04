@@ -87,7 +87,11 @@ a slice of bytes.
 ## 🚀 deploy
 
 In order to deploy your app you will need to build it within a runtime compatible with the
-lambda python 3.6 env. A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience
+lambda python 3.6 env.
+
+### docker
+
+A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience
 
 It's focus is on applications targetting **stable** versions of Rust.
 
@@ -103,5 +107,17 @@ $ docker run --rm \
 This will result in a deployable .so build artifact under a `target/lambda` directory
 
 This file can then be zipped up for AWS lambda deployment.
+
+### serverless framework
+
+A [serverless framework](https://serverless.com/framework/) [plugin](https://github.com/softprops/serverless-rust) exists to facilitate rapid development/deployment cycles.
+
+The fastest way to get started is using [this serverless project template](https://github.com/softprops/serverless-lando)
+
+```bash
+$ serverless install \
+  --url https://github.com/softprops/serverless-lando \
+  --name my-new-service
+```
 
 Doug Tangren (softprops) 2018
