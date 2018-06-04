@@ -62,10 +62,6 @@ crate-type = ["cdylib"]
 [dependencies]
 lando = "0.0"
 cpython = "0.1"
-python3-sys = { version = "0.1.3", features = ["python-3-4"], optional = true }
-
-[features]
-default = ["cpython/python3-sys"]
 ```
 
 > 💡 You may be new to the `cdylib` and `crate-type` lib attributes. This informs rustc to [link](https://doc.rust-lang.org/reference/linkage.html) and produce a shared object ( `*.so` ) file allowing your rustlang application to be embedded within the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
@@ -93,18 +89,19 @@ a slice of bytes.
 In order to deploy your app you will need to build it within a runtime compatible with the
 lambda python 3.6 env. A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience
 
+It's focus is on applications targetting **stable** versions of Rust.
+
 ```bash
 $ docker run --rm \
         -v ${PWD}:/code \
         -v ${HOME}/.cargo/registry:/root/.cargo/registry \
         -v ${HOME}/.cargo/git:/root/.cargo/git \
-        -e CARGO_FLAGS="--features python3-sys" \
+        -e CARGO_FLAGS="--features lando/python3-sys" \
         softprops/lambda-rust
 ```
 
 This will result in a deployable .so build artifact under a `target/lambda` directory
 
-This file can then be zipped up for deployment
-
+This file can then be zipped up for AWS lambda deployment.
 
 Doug Tangren (softprops) 2018
