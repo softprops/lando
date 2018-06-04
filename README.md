@@ -84,6 +84,8 @@ gateway!(|request, _context| {
 This closure accepts an `http::Request` with a [lando::Body](http://lessis.me/lando/lando/enum.Body.html). This body can be dereferenced as
 a slice of bytes.
 
+For more more in-depth details see this project's [crate documentation](http://lessis.me/lando/lando/index.html).
+
 ## 🚀 deploy
 
 In order to deploy your app you will need to build it within a runtime compatible with the
