@@ -2,7 +2,7 @@
 
 > aws lambda gateway api lambda interfaces for [Rustlang](https://www.rust-lang.org) applications
 
-![logo](logo.png | width=100)
+![logo](logo.png  width=100)
 
 ```rust
 #[macro_use] extern crate cpython;
