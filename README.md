@@ -60,7 +60,7 @@ name = "lambda"
 crate-type = ["cdylib"]
 
 [dependencies]
-lando = "0.0"
+lando = "0.1"
 cpython = "0.1"
 ```
 
