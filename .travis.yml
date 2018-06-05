@@ -10,6 +10,10 @@ matrix:
     - rust: nightly
 script:
   - cargo test
+  - |-
+    if [  $TRAVIS_RUST_VERSION = nightly ]; then
+      cargo bench
+    fi
 before_cache:
   - chmod -R a+r $HOME/.cargo
 before_install:
