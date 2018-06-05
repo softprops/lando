@@ -4,7 +4,7 @@
 <img src="https://raw.githubusercontent.com/softprops/lando/master/logo.png" width="300" />
 </p>
 
-> aws lambda gateway api lambda interfaces for [Rustlang](https://www.rust-lang.org) applications
+> [aws lambda](https://aws.amazon.com/lambda/) [api gateway](https://aws.amazon.com/api-gateway/) interfaces for [Rustlang](https://www.rust-lang.org) applications
 
 ```rust
 #[macro_use] extern crate cpython;
@@ -23,12 +23,12 @@ Lando is a crate for **serverless** rustlang HTTP applications.
 
 > The rustlang ecosystem has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
 If you're interested in writing HTTP applications, you may want to evaluate them as well.
-A common theme they all share is that they provide interfaces for authoring applications,
+A common theme they share is in providing interfaces for authoring applications,
 in addition to interfaces for configuring servers that listen on ports that expose your application over network connections.
 A server which is then your reponsiblity to figure out how to host, scale,
 monitor and manage operations and uptime for.
 
-Lando is different. Lando's focus is solely on writing applications, freeing developers from the business and toil of the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing servers.
+Lando is different. Lando's focus is solely on writing applications. AWS will manage servers for you, freeing you from the business and toil of the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing servers yourself.
 
 Lando is designed to work _with_ the interfaces of strong existing ecosystems, both within Rust as well as the strong serverless ecosystems that extend beyond Rust ( make some friends! ).
 
@@ -56,7 +56,7 @@ and is [extremely fast](https://www.rust-lang.org/en-US/faq.html#how-fast-is-rus
 
 ## 📦  install
 
-Add the following to your cargo project's `Cargo.toml` file.
+Add the following to your [cargo](https://doc.rust-lang.org/cargo/) project's `Cargo.toml` file.
 
 ```toml
 [lib]
@@ -118,7 +118,7 @@ This file can then be zipped up for AWS lambda deployment.
 
 A [serverless framework](https://serverless.com/framework/) [plugin](https://github.com/softprops/serverless-rust) exists to facilitate rapid development/deployment cycles.
 
-The fastest way to get started is using [this serverless project template](https://github.com/softprops/serverless-lando)
+The fastest way to get started with lando is by using [this serverless project template](https://github.com/softprops/serverless-lando)
 
 ```bash
 $ serverless install \
