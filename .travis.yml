@@ -26,25 +26,15 @@ cache:
   directories:
     - target/debug/deps
     - target/debug/build
-    - $HOME/.kcov
 addons:
   apt:
     packages:
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
-      - binutils-dev
-      - libiberty-dev
+      - libssl-dev
 after_success:
-  - >-
-    [ $TRAVIS_EVENT_TYPE != "cron" ] && [ $TRAVIS_RUST_VERSION = stable ] && [
-    $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ] && (ls
-    target/debug && cargo test --no-run && for file in target/debug/lando-*; do
-    if [[ "${file: -2}" != ".d" ]]; then mkdir -p "target/cov/$(basename
-    $file)"; kcov --exclude-pattern=/.cargo,/usr/lib --verify
-    "target/cov/$(basename $file)" "$file"; fi; done && kcov
-    --coveralls-id=$TRAVIS_JOB_ID --merge target/cov target/cov/* && echo
-    "covered") || true
+  - |-
+    [ $TRAVIS_RUST_VERSION = stable ] && (
+      bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh) && cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+    ) || true
   - >-
     [ $TRAVIS_RUST_VERSION = stable ] && [ $TRAVIS_BRANCH = master ] && [
     $TRAVIS_PULL_REQUEST = false ] && cargo doc --no-deps && echo "<meta
