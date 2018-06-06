@@ -9,6 +9,7 @@ use request::{GatewayRequest, RequestContext};
 use response::GatewayResponse;
 use rust_http::header::CONTENT_TYPE;
 use rust_http::{Request as HttpRequest, Response as HttpResponse};
+use serde::de::value::Error as SerdeError;
 use serde::Deserialize;
 use serde_json;
 use serde_urlencoded;
@@ -22,6 +23,17 @@ struct PathParameters(HashMap<String, String>);
 /// API gateway configured
 /// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
 struct StageVariables(HashMap<String, String>);
+
+/// Payload deserialization errors
+#[derive(Debug, Fail)]
+pub enum PayloadError {
+    /// Returned when `application/json` bodies fail to deserialize a payload
+    #[fail(display = "failed to parse payload from application/json")]
+    Json(serde_json::Error),
+    /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
+    #[fail(display = "failed to parse payload application/x-www-form-urlencoded")]
+    WwwFormUrlEncoded(SerdeError),
+}
 
 /// Extentions for `lando::Request` objects that
 /// provide access to [API gateway features](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
@@ -47,7 +59,9 @@ struct StageVariables(HashMap<String, String>);
 ///
 /// # fn main() {
 /// gateway!(|request, _| {
-///   let args: Args = request.payload().unwrap_or_default();
+///   let args: Args = request.payload()
+///     .unwrap_or_else(|_parse_err| None)
+///     .unwrap_or_default();
 ///   Ok(
 ///      Response::new(
 ///        format!(
@@ -74,13 +88,16 @@ pub trait RequestExt {
     /// Return request context assocaited with the API gateway request
     fn request_context(&self) -> RequestContext;
 
-    /// Return the result of a payload parsed into a serde Deserializeable
-    /// type.
+    /// Return the Result of a payload parsed into a serde Deserializeable
+    /// type
     ///
     /// Currently only `application/x-www-form-urlencoded`
     /// and `application/json` flavors of content type
     /// are supported
-    fn payload<D>(&self) -> Option<D>
+    ///
+    /// A [PayloadError](enum.PayloadError.html) will be for undeserializable
+    /// payloads. If no body is provided `Ok(None)` will be returned.
+    fn payload<D>(&self) -> Result<Option<D>, PayloadError>
     where
         for<'de> D: Deserialize<'de>;
 }
@@ -112,19 +129,24 @@ impl RequestExt for HttpRequest<super::Body> {
             .unwrap_or(Default::default())
     }
 
-    fn payload<D>(&self) -> Option<D>
+    fn payload<D>(&self) -> Result<Option<D>, PayloadError>
     where
         for<'de> D: Deserialize<'de>,
     {
         self.headers()
             .get(CONTENT_TYPE)
-            .and_then(|ct| match ct.to_str() {
+            .map(|ct| match ct.to_str() {
                 Ok("application/x-www-form-urlencoded") => {
-                    serde_urlencoded::from_bytes(self.body().as_ref()).ok()
+                    serde_urlencoded::from_bytes::<D>(self.body().as_ref())
+                        .map_err(PayloadError::WwwFormUrlEncoded)
+                        .map(Some)
                 }
-                Ok("application/json") => serde_json::from_slice(self.body().as_ref()).ok(),
-                _ => None,
+                Ok("application/json") => serde_json::from_slice::<D>(self.body().as_ref())
+                    .map_err(PayloadError::Json)
+                    .map(Some),
+                _ => Ok(None),
             })
+            .unwrap_or_else(|| Ok(None))
     }
 }
 
@@ -271,7 +293,7 @@ mod tests {
             ..Default::default()
         };
         let actual = HttpRequest::from(gwr);
-        let payload: Option<Payload> = actual.payload();
+        let payload: Option<Payload> = actual.payload().unwrap_or_else(|_| None);
         assert_eq!(
             payload,
             Some(Payload {
@@ -279,6 +301,29 @@ mod tests {
                 baz: 2
             })
         )
+    }
+
+    #[test]
+    fn requests_have_form_post_parseable_payloads_for_hashmaps() {
+        let mut headers = HashMap::new();
+        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert(
+            CONTENT_TYPE.as_str().to_string(),
+            "application/x-www-form-urlencoded".to_owned(),
+        );
+        let gwr: GatewayRequest = GatewayRequest {
+            path: "/foo".into(),
+            http_method: "GET".into(),
+            headers: headers,
+            body: Some("foo=bar&baz=2".into()),
+            ..Default::default()
+        };
+        let actual = HttpRequest::from(gwr);
+        let mut expected = HashMap::new();
+        expected.insert("foo".to_string(), "bar".to_string());
+        expected.insert("baz".to_string(), "2".to_string());
+        let payload: Option<HashMap<String, String>> = actual.payload().unwrap_or_else(|_| None);
+        assert_eq!(payload, Some(expected))
     }
 
     #[test]
@@ -302,7 +347,7 @@ mod tests {
             ..Default::default()
         };
         let actual = HttpRequest::from(gwr);
-        let payload: Option<Payload> = actual.payload();
+        let payload: Option<Payload> = actual.payload().unwrap_or_else(|_| None);
         assert_eq!(
             payload,
             Some(Payload {

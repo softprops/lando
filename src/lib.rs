@@ -86,6 +86,9 @@ extern crate base64;
 extern crate bytes;
 extern crate cpython;
 extern crate crowbar;
+extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 extern crate http as rust_http;
 extern crate serde;
 #[macro_use]
@@ -109,7 +112,7 @@ mod request;
 mod response;
 
 pub use body::Body;
-pub use http::RequestExt;
+pub use http::{PayloadError, RequestExt};
 pub use request::GatewayRequest;
 
 /// A re-exported version of `http::Request` with a type

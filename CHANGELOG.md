@@ -20,7 +20,7 @@ struct Params {
 gateway!(
   |req, _| => Ok(
     Response::new(
-      req.payload::<Params>().map(
+      req.payload::<Params>().unwrap_or_else(|_| None).map(
         |params| format!(
           "the answer is {}", params.y + params.y
         )
