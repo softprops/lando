@@ -22,7 +22,7 @@ gateway!(
     Response::new(
       req.payload::<Params>().unwrap_or_else(|_| None).map(
         |params| format!(
-          "the answer is {}", params.y + params.y
+          "the answer is {}", params.x + params.y
         )
       ).unwrap_or_else(
         "try again".to_string()
