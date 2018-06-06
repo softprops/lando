@@ -1,4 +1,4 @@
-# 0.1.1 (unreleased)
+# 0.1.1
 
 * bug fix - support for reading host from "host" (lowercase) in addition to "Host"
 * feature - add support for "application/x-www-form-urlencoded" and "application/json"
