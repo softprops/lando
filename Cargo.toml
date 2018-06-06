@@ -1,8 +1,8 @@
 [package]
 name = "lando"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["softprops <d.tangren@gmail.com>"]
-description = "Rust interface lambda API gateway events"
+description = "Rust interface for AWS lambda API gateway events"
 documentation = "https://softprops.github.io/lando"
 homepage = "https://github.com/softprops/lando"
 repository = "https://github.com/softprops/lando"
@@ -17,8 +17,12 @@ include = [
 ]
 
 [badges]
-travis-ci = { repository = "softprops/gateway" }
-coveralls = { repository = "softprops/gateway" }
+travis-ci = { repository = "softprops/lando" }
+coveralls = { repository = "softprops/lando" }
+maintenance = { status = "actively-developed" }
+
+[dev-dependencies]
+pretty_assertions = "0.5"
 
 [dependencies]
 base64 = "0.9"
@@ -32,6 +36,7 @@ http = "0.1"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+serde_urlencoded = "0.5"
 
 [features]
 default = ["cpython/python3-sys"]
