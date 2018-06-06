@@ -113,7 +113,7 @@ mod response;
 
 pub use body::Body;
 pub use http::{PayloadError, RequestExt};
-pub use request::GatewayRequest;
+pub use request::{GatewayRequest, Identity, RequestContext};
 
 /// A re-exported version of `http::Request` with a type
 /// parameter for body fixed to type [lando::Body](enum.Body.html)
