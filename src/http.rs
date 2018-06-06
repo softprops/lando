@@ -1,4 +1,4 @@
-//! convertions to and from internal gateway types and http crate types
+//! conversions to and from internal gateway types and http crate types
 
 // Std
 use std::collections::HashMap;
