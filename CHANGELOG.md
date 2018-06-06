@@ -25,7 +25,7 @@ gateway!(
           "the answer is {}", params.x + params.y
         )
       ).unwrap_or_else(
-        "try again".to_string()
+        || "try again".to_string()
       )
     )
 );
