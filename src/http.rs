@@ -7,7 +7,11 @@ use std::collections::HashMap;
 use body::Body;
 use request::{GatewayRequest, RequestContext};
 use response::GatewayResponse;
+use rust_http::header::CONTENT_TYPE;
 use rust_http::{Request as HttpRequest, Response as HttpResponse};
+use serde::Deserialize;
+use serde_json;
+use serde_urlencoded;
 
 /// API gateway pre-parsed http query string parameters
 struct QueryStringParameters(HashMap<String, String>);
@@ -20,7 +24,43 @@ struct PathParameters(HashMap<String, String>);
 struct StageVariables(HashMap<String, String>);
 
 /// Extentions for `lando::Request` objects that
-/// provide access to API gateway features
+/// provide access to [API gateway features](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
+///
+/// In addition, you can also access a request's body in deserialized format
+/// for payloads sent in `application/x-www-form-urlencoded` or
+/// `application/x-www-form-urlencoded` format
+///
+/// ```rust
+/// #[macro_use] extern crate cpython;
+/// #[macro_use] extern crate lando;
+/// #[macro_use] extern crate serde_derive;
+///
+/// use lando::{Response, RequestExt};
+///
+/// #[derive(Debug,Deserialize,Default)]
+/// struct Args {
+///   #[serde(default)]
+///   x: usize,
+///   #[serde(default)]
+///   y: usize
+/// }
+///
+/// # fn main() {
+/// gateway!(|request, _| {
+///   let args: Args = request.payload().unwrap_or_default();
+///   Ok(
+///      Response::new(
+///        format!(
+///          "{} + {} = {}",
+///          args.x,
+///          args.y,
+///          args.x + args.y
+///        )
+///      )
+///   )
+/// });
+/// # }
+/// ```
 pub trait RequestExt {
     /// Return pre-parsed http query string parameters
     /// associated with the API gateway request
@@ -33,9 +73,19 @@ pub trait RequestExt {
     fn stage_variables(&self) -> HashMap<String, String>;
     /// Return request context assocaited with the API gateway request
     fn request_context(&self) -> RequestContext;
+
+    /// Return the result of a payload parsed into a serde Deserializeable
+    /// type.
+    ///
+    /// Currently only `application/x-www-form-urlencoded`
+    /// and `application/json` flavors of content type
+    /// are supported
+    fn payload<D>(&self) -> Option<D>
+    where
+        for<'de> D: Deserialize<'de>;
 }
 
-impl<T> RequestExt for HttpRequest<T> {
+impl RequestExt for HttpRequest<super::Body> {
     fn query_string_parameters(&self) -> HashMap<String, String> {
         self.extensions()
             .get::<QueryStringParameters>()
@@ -60,6 +110,21 @@ impl<T> RequestExt for HttpRequest<T> {
             .get::<RequestContext>()
             .map(|ext| ext.clone())
             .unwrap_or(Default::default())
+    }
+
+    fn payload<D>(&self) -> Option<D>
+    where
+        for<'de> D: Deserialize<'de>,
+    {
+        self.headers()
+            .get(CONTENT_TYPE)
+            .and_then(|ct| match ct.to_str() {
+                Ok("application/x-www-form-urlencoded") => {
+                    serde_urlencoded::from_bytes(self.body().as_ref()).ok()
+                }
+                Ok("application/json") => serde_json::from_slice(self.body().as_ref()).ok(),
+                _ => None,
+            })
     }
 }
 
@@ -107,12 +172,15 @@ impl From<GatewayRequest> for HttpRequest<Body> {
             request_context,
         } = value;
 
-        // build an http::Result from a lando::Request
+        // build an http::Request from a lando::Request
         let mut builder = HttpRequest::builder();
         builder.method(http_method.as_str()).uri({
             format!(
                 "https://{}{}",
-                headers.get("Host").unwrap_or(&String::new()),
+                headers
+                    .get("Host")
+                    .or_else(|| headers.get("host"))
+                    .unwrap_or(&String::new()),
                 path
             )
         });
@@ -142,14 +210,15 @@ impl From<GatewayRequest> for HttpRequest<Body> {
 #[cfg(test)]
 mod tests {
     use super::GatewayRequest;
-    use RequestExt;
+    use rust_http::header::{CONTENT_TYPE, HOST};
     use rust_http::Request as HttpRequest;
     use std::collections::HashMap;
+    use RequestExt;
 
     #[test]
     fn requests_convert() {
         let mut headers = HashMap::new();
-        headers.insert("Host".to_owned(), "www.rust-lang.org".to_owned());
+        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
             http_method: "GET".into(),
@@ -167,7 +236,7 @@ mod tests {
     #[test]
     fn requests_have_query_string_ext() {
         let mut headers = HashMap::new();
-        headers.insert("Host".to_owned(), "www.rust-lang.org".to_owned());
+        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
         let mut query = HashMap::new();
         query.insert("foo".to_owned(), "bar".to_owned());
         let gwr: GatewayRequest = GatewayRequest {
@@ -179,5 +248,67 @@ mod tests {
         };
         let actual = HttpRequest::from(gwr);
         assert_eq!(actual.query_string_parameters(), query.clone());
+    }
+
+    #[test]
+    fn requests_have_form_post_parseable_payloads() {
+        let mut headers = HashMap::new();
+        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert(
+            CONTENT_TYPE.as_str().to_string(),
+            "application/x-www-form-urlencoded".to_owned(),
+        );
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let gwr: GatewayRequest = GatewayRequest {
+            path: "/foo".into(),
+            http_method: "GET".into(),
+            headers: headers,
+            body: Some("foo=bar&baz=2".into()),
+            ..Default::default()
+        };
+        let actual = HttpRequest::from(gwr);
+        let payload: Option<Payload> = actual.payload();
+        assert_eq!(
+            payload,
+            Some(Payload {
+                foo: "bar".into(),
+                baz: 2
+            })
+        )
+    }
+
+    #[test]
+    fn requests_have_json_parseable_payloads() {
+        let mut headers = HashMap::new();
+        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert(
+            CONTENT_TYPE.as_str().to_string(),
+            "application/json".to_owned(),
+        );
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let gwr: GatewayRequest = GatewayRequest {
+            path: "/foo".into(),
+            http_method: "GET".into(),
+            headers: headers,
+            body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
+            ..Default::default()
+        };
+        let actual = HttpRequest::from(gwr);
+        let payload: Option<Payload> = actual.payload();
+        assert_eq!(
+            payload,
+            Some(Payload {
+                foo: "bar".into(),
+                baz: 2
+            })
+        )
     }
 }

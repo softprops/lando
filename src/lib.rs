@@ -79,6 +79,9 @@
 //! by building in an environment similar to Lambda's, like [this Docker
 //! container](https://hub.docker.com/r/softprops/lambda-rust/).
 //!
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
 extern crate base64;
 extern crate bytes;
 extern crate cpython;
@@ -88,6 +91,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate serde_urlencoded;
 
 // Std
 use std::error::Error as StdError;
@@ -179,9 +183,9 @@ where
 ///
 /// You can also the provide `gateway!` macro with a named function
 ///
-/// The request argument is just a regular http::Request type but you can
-/// access API gateway features, like path and query string parameters, and
-/// stage variables by importing [lando::RequestExt`](trait.RequestExt.html)
+/// The request argument is just a regular `http::Request` type but you can
+/// extend with API gateway features, like path and query string parameters, and
+/// more by importing [lando::RequestExt`](trait.RequestExt.html)
 ///
 /// The context argument is [same type](struct.LambdaContext.html) used within the crowbar crate
 ///
@@ -229,7 +233,7 @@ where
 /// crate-type = ["cdylib"]
 /// ```
 ///
-/// You then also need to change the names of the library indentifiers, expected by
+/// You then also need to change the names of the library identifiers, expected by
 /// the [cpython crate](https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html),
 /// by using the following `gateway!` format. This pattern may no longer needed
 /// the std library's [concat_idents!](https://doc.rust-lang.org/std/macro.concat_idents.html)
