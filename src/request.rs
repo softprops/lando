@@ -45,20 +45,21 @@ pub struct RequestContext {
     pub identity: Identity,
 }
 
+/// Identity assoicated with request
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
-    source_ip: String,
-    cognito_identity_id: Option<String>,
-    cognito_identity_pool_id: Option<String>,
-    cognito_authentication_provider: Option<String>,
-    cognito_authentication_type: Option<String>,
-    account_id: Option<String>,
-    caller: Option<String>,
-    api_key: Option<String>,
-    user: Option<String>,
-    user_agent: Option<String>,
-    user_arn: Option<String>,
+    pub source_ip: String,
+    pub cognito_identity_id: Option<String>,
+    pub cognito_identity_pool_id: Option<String>,
+    pub cognito_authentication_provider: Option<String>,
+    pub cognito_authentication_type: Option<String>,
+    pub account_id: Option<String>,
+    pub caller: Option<String>,
+    pub api_key: Option<String>,
+    pub user: Option<String>,
+    pub user_agent: Option<String>,
+    pub user_arn: Option<String>,
 }
 
 /// deserializes (json) null values to empty hashmap
