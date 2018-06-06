@@ -28,6 +28,7 @@ gateway!(
         || "try again".to_string()
       )
     )
+  )
 );
 ```
 
