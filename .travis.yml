@@ -1,5 +1,7 @@
 sudo: required
+
 language: rust
+
 matrix:
   fast_finish: true
   include:
@@ -8,26 +10,37 @@ matrix:
     - rust: stable
   allow_failures:
     - rust: nightly
+
 script:
   - cargo test
   - 'if [  $TRAVIS_RUST_VERSION = nightly ]; then cargo bench; fi'
+
 before_cache:
   - chmod -R a+r $HOME/.cargo
+
 cache:
   cargo: true
   apt: true
-  directories:
-    - target/debug/deps
-    - target/debug/build
+
 addons:
   apt:
     packages:
+      # required by tarpaulin code coverage tool
       - libssl-dev
+
+install: |
+  if [[ "$TRAVIS_RUST_VERSION" == stable ]] && [[ $(cargo tarpaulin --version) != *0.6.2 ]]; then
+    `RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install  --force --version 0.6.2  cargo-tarpaulin`
+  fi
+
 after_success:
-  - |-
-    [ $TRAVIS_RUST_VERSION = stable ] && (
-      bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh) && cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
-    ) || true
+  # report coverage to coveralls
+  # see https://github.com/xd009642/tarpaulin for more information
+  - '[ $TRAVIS_EVENT_TYPE != "cron" ] &&
+    [ $TRAVIS_RUST_VERSION = stable ] &&
+    [ $TRAVIS_BRANCH = master ] &&
+    [ $TRAVIS_PULL_REQUEST = false ] &&
+    cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID || true'
   - >-
     [ $TRAVIS_RUST_VERSION = stable ] && [ $TRAVIS_BRANCH = master ] && [
     $TRAVIS_PULL_REQUEST = false ] && cargo doc --no-deps && echo "<meta
