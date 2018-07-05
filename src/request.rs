@@ -17,11 +17,11 @@ pub struct GatewayRequest {
     pub path: String,
     pub http_method: String,
     pub headers: HashMap<String, String>,
-    #[serde(deserialize_with = "nullable_map")]
+    #[serde(deserialize_with = "nullable_default")]
     pub query_string_parameters: HashMap<String, String>,
-    #[serde(deserialize_with = "nullable_map")]
+    #[serde(deserialize_with = "nullable_default")]
     pub path_parameters: HashMap<String, String>,
-    #[serde(deserialize_with = "nullable_map")]
+    #[serde(deserialize_with = "nullable_default")]
     pub stage_variables: HashMap<String, String>,
     pub body: Option<String>,
     #[serde(default)]
@@ -62,11 +62,12 @@ pub struct Identity {
     pub user_arn: Option<String>,
 }
 
-/// deserializes (json) null values to empty hashmap
+/// deserializes (json) null values to their default values
 // https://github.com/serde-rs/serde/issues/1098
-fn nullable_map<'de, D>(deserializer: D) -> Result<HashMap<String, String>, D::Error>
+fn nullable_default<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where
     D: Deserializer<'de>,
+    T: Default + Deserialize<'de>,
 {
     let opt = Option::deserialize(deserializer)?;
     Ok(opt.unwrap_or_else(|| Default::default()))
@@ -79,7 +80,7 @@ mod tests {
 
     use serde_json;
 
-    use super::{nullable_map, GatewayRequest};
+    use super::{nullable_default, GatewayRequest};
 
     #[test]
     fn implements_default() {
@@ -96,7 +97,7 @@ mod tests {
     fn deserialize_with_null() {
         #[derive(Debug, PartialEq, Deserialize)]
         struct Test {
-            #[serde(deserialize_with = "nullable_map")]
+            #[serde(deserialize_with = "nullable_default")]
             foo: HashMap<String, String>,
         }
 
