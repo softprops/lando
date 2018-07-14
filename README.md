@@ -126,4 +126,25 @@ This will result in a deployable .so build artifact under a `target/lambda` dire
 
 This file can then be zipped up for AWS lambda deployment.
 
+## performance
+
+Performance analysis for lambda applications varies based on your usecase. In the case
+of lando factors include your use of api gateway (the HTTP loadbalancing that AWS runs that
+invokes your functions), lambda translation layer (), and your application (that's you!).
+
+The serverless model is an explicit tradeoff of control runtime for focus on application.
+
+Your application is very capable of running in double digit milliseconds.
+
+Lando's goal is to provide a minimally invasive translation layer between the native
+python events to native rustlang http types and back
+
+The a benchmark test exists to measure that translation time
+with a typical [gateway event](benches/request.json)
+
+
+```bash
+test gateway_conversion ... bench:       8,652 ns/iter (+/- 4,193)
+```
+
 Doug Tangren (softprops) 2018
