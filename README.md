@@ -94,7 +94,7 @@ For more more in-depth details see this project's [crate documentation](http://l
 In order to deploy your app you will need to build it within a runtime compatible with the
 lambda python 3.6 env.
 
-### serverless framework
+### ⚡ serverless framework
 
 The recommended way to get started is with the [serverless framework](https://serverless.com/framework/). A [serverless framework plugin](https://github.com/softprops/serverless-rust) exists to facilitate rapid development/deployment cycles.
 
@@ -106,7 +106,7 @@ $ serverless install \
   --name my-new-service
 ```
 
-### docker
+### 🐳 docker
 
 A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience which replicates
 the AWS python3.6 env with rustlang build tooling.
@@ -126,25 +126,37 @@ This will result in a deployable .so build artifact under a `target/lambda` dire
 
 This file can then be zipped up for AWS lambda deployment.
 
-## performance
+## 🏃 performance
 
-Performance analysis for lambda applications varies based on your usecase. In the case
-of lando factors include your use of api gateway (the HTTP loadbalancing that AWS runs that
-invokes your functions), lambda translation layer (), and your application (that's you!).
+Performance analysis for lambda applications, or any application, varies based on your usecase.
+In the specific case of lando, factors include
 
-The serverless model is an explicit tradeoff of control runtime for focus on application.
+* your use of api gateway (the HTTP loadbalancing that AWS runs that invokes your functions)
+* your lambda configuration (allocation of memory and attachment to resources like VPC's)
+* lambda translation layer (translating between python and rust)
+* your application (that's you!)
+
+The serverless mindset is an explicit tradeoff of control runtime for focus on application.
 
 Your application is very capable of running in double digit milliseconds.
 
 Lando's goal is to provide a minimally invasive translation layer between the native
 python events to native rustlang http types and back
 
-The a benchmark test exists to measure that translation time
-with a typical [gateway event](benches/request.json)
+A benchmark test exists to measure that translation time
+with a typical [gateway event](benches/request.json) which reports a typical
+(8.65 μ (micro) second results +/- 4 μ seconds) This is not likely going to be
+the bottleneck of your application
 
 
 ```bash
 test gateway_conversion ... bench:       8,652 ns/iter (+/- 4,193)
 ```
+
+> 💡 Consideration for concurency should be noted. Performance is typically affected
+and related to scalability. Two models for scalabilty are veritical and horizontal.
+Lamnda is expressly horizontal. The platform handles concurrency by spawning more
+instances of your function for you. This results in some economical advantages in
+they way you only pay for what you use.
 
 Doug Tangren (softprops) 2018
