@@ -155,8 +155,9 @@ test gateway_conversion ... bench:       8,652 ns/iter (+/- 4,193)
 
 > 💡 Consideration for concurency should be noted. Performance is typically affected
 and related to scalability. Two models for scalabilty are veritical and horizontal.
-Lamnda is expressly horizontal. The platform handles concurrency by spawning more
+AWS Lamda is expressly horizontal scaled. The platform handles concurrency by spawning more
 instances of your function for you. This results in some economical advantages in
-they way you only pay for what you use.
+they way you only pay for what you use. Bear in mind you are billed at intervals of 100 milliseconds,
+so the usefulness optimizing for cost is lost once you're dipped below that point.
 
 Doug Tangren (softprops) 2018
