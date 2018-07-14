@@ -95,11 +95,24 @@ For more more in-depth details see this project's [crate documentation](http://l
 In order to deploy your app you will need to build it within a runtime compatible with the
 lambda python 3.6 env.
 
+### serverless framework
+
+The recommended way to get started is with the [serverless framework](https://serverless.com/framework/). A [serverless framework plugin](https://github.com/softprops/serverless-rust) exists to facilitate rapid development/deployment cycles.
+
+You can bootstramp a new deploy ready lando application by using [this serverless project template](https://github.com/softprops/serverless-lando)
+
+```bash
+$ serverless install \
+  --url https://github.com/softprops/serverless-lando \
+  --name my-new-service
+```
+
 ### docker
 
-A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience
+A [docker image](https://hub.docker.com/r/softprops/lambda-rust/) is provided for convenience which replicates
+the AWS python3.6 env with rustlang build tooling.
 
-It's focus is on applications targetting **stable** versions of Rust.
+It's focus is on applications targeting **stable** versions of Rust.
 
 ```bash
 $ docker run --rm \
@@ -113,17 +126,5 @@ $ docker run --rm \
 This will result in a deployable .so build artifact under a `target/lambda` directory
 
 This file can then be zipped up for AWS lambda deployment.
-
-### serverless framework
-
-A [serverless framework](https://serverless.com/framework/) [plugin](https://github.com/softprops/serverless-rust) exists to facilitate rapid development/deployment cycles.
-
-The fastest way to get started with lando is by using [this serverless project template](https://github.com/softprops/serverless-lando)
-
-```bash
-$ serverless install \
-  --url https://github.com/softprops/serverless-lando \
-  --name my-new-service
-```
 
 Doug Tangren (softprops) 2018
