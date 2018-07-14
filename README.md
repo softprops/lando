@@ -21,8 +21,7 @@ gateway!(|_, _| {
 
 Lando is a crate for **serverless** rustlang HTTP applications.
 
-> The rustlang ecosystem has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
-If you're interested in writing HTTP applications, you may want to evaluate them as well.
+> The rustlang ecosystem has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server), you may want to evaluate them as well.
 A common theme they share is in providing interfaces for authoring applications,
 in addition to interfaces for configuring servers that listen on ports that expose your application over network connections.
 A server which is then your reponsiblity to figure out how to host, scale,
@@ -38,11 +37,11 @@ provides needed lower level machinery for easily embeding a Rust application wit
 [lowest overhead runtimes](https://theburningmonk.com/2017/06/aws-lambda-compare-coldstart-time-with-different-languages-memory-and-code-sizes/),
 python 3.6. Lando specifically targets API Gateway triggered lambdas. Checkout crowbar for other types of [lambda triggers](https://docs.aws.amazon.com/lambda/latest/dg/invoking-lambda-function.html).
 
-A large and mature ecosystem of tooling for AWS lambda already exists and works well,
+A *large* and *mature* ecosystem of tooling for AWS lambda already exists and works well,
 including workflow tools like [the serverless toolkit](https://serverless.com/framework/). Because these tools are likely to already exist within organizations, the barrier of introducing Rustlang into their arsenel will be much lower.
 Lando does not intend to replace these tools but instead to work well with them 👫🏾.
 
-> 💡 You may be asking yourself, what makes Rust a good choice for Lambda?
+> 💡 What makes Rust a good choice for Lambda applications?
 The AWS [cost model for lambda](https://aws.amazon.com/lambda/pricing/)
 is largely based on two factors: memory size and speed.
 The CPU provided to applications is proportional to memory size requested.
