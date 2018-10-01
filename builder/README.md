@@ -1,16 +1,18 @@
-# lambda rust docker builder
+# lambda rust docker builder 🐳 🦀
 
-## about
+## 🤔 about
 
-This image extends [lambda ci python 3.6](https://github.com/lambci/docker-lambda#documentation) docker image which is a reproduction of the actual python 3.6 lambda runtime environment
-and installs [rustup](https://rustup.rs/) and the stable rust toolchain.
+This image extends [lambda ci python 3.6](https://github.com/lambci/docker-lambda#documentation) docker image, a faithful reproduction of the actual AWS python 3.6 🐍 lambda runtime environment,
+and installs [rustup](https://rustup.rs/) and the *stable* rust toolchain.
 
-## install
+## 📦 install
 
-Tags for this docker follow the convention `softprops/lambda-rust:{version}-rust-{rust-version}'
+Tags for this docker follow the convention `softprops/lambda-rust:{version}-rust-{rust-stable-version}'
 Where rust-version is a stable version of rust.
 
-## usage
+You can also depend directly on `softprops/lambda-rust:latest` for the most recently published version.
+
+## 🤸 usage
 
 The default docker command will build a release version your rust application under `target/lambda/` to
 isolate the lambda specific build artifacts from your localhost build artifacts.
@@ -19,10 +21,10 @@ You will want to volume mount `/code` to the directory containing your cargo pro
 
 You can pass additional flags to cargo by setting the `CARGO_FLAGS` docker env variable
 
-A typical run might look like the following
+A typical docker run might look like the following
 
 ```bash
-docker run --rm \
+$ docker run --rm \
 		-v ${PWD}:/code \
 		-v ${HOME}/.cargo/registry:/root/.cargo/registry \
 		-v ${HOME}/.cargo/git:/root/.cargo/git \
