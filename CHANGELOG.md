@@ -4,43 +4,40 @@
 
 before
 
-in your `Cargo.toml` file
+... in your `Cargo.toml` file
 
 ```toml
 [dependencies]
 lando = "0.1"
 http = "0.1" # need to depend on http crate explicitly
-...
 ```
 
-in your `src/lib.rs`
+... in your `src/lib.rs`
 
 ```rust
 #[macro_use]
 extern crate lando;
 // need to extern http crate explicitly
 extern crate http;
-...
 
 use http::{Method, StatusCode};
 ```
 
 after
 
-in your `Cargo.toml`
+... in your `Cargo.toml`
 
 ```toml
 [dependencies]
 lando = "0.1" # no longer need to add a dependency on http explicitly
-...
 ```
 
-in your `src/lib.rs`
+... in your `src/lib.rs`
 
 ```rust
 #[macro_use]
 extern crate lando;
-...
+
 // consume http re-export from lando crate
 use lando::http::{Method, StatusCode};
 ```
@@ -49,11 +46,15 @@ use lando::http::{Method, StatusCode};
 
 before
 
+... in your `Cargo.toml` file
+
 ```toml
 [dependencies]
 lando = "0.1"
 cpython = "0.1" # need to depend on cpython crate explicitly for its macros
 ```
+
+... in your `src/lib.rs` file
 
 ```rust
 #[macro_use]
@@ -66,10 +67,14 @@ extern crate cpython;
 
 after
 
+... in your `Cargo.toml` file
+
 ```toml
 [dependencies]
 lando = "0.1" # no longer need to declar cpython as an explicit dependency
 ```
+
+... in your `src/lib.rs` file
 
 ```rust
 #[macro_use]
