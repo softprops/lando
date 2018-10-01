@@ -45,6 +45,37 @@ extern crate lando;
 use lando::http::{Method, StatusCode};
 ```
 
+* remove the need to explicitly declare cpython as a dependency, both as a depenency and macro_use
+
+before
+
+```toml
+[dependencies]
+lando = "0.1"
+cpython = "0.1" # need to depend on cpython crate explicitly for its macros
+```
+
+```rust
+#[macro_use]
+extern crate lando;
+// needed because lando's macros used cpython macros,
+// an impl detail
+#[macro_use]
+extern crate cpython;
+```
+
+after
+
+```toml
+[dependencies]
+lando = "0.1" # no longer need to declar cpython as an explicit dependency
+```
+
+```rust
+#[macro_use]
+extern crate lando; // impl details are hidden
+```
+
 # 0.1.1
 
 * bug fix - support for reading host from "host" (lowercase) in addition to "Host"

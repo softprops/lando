@@ -3,7 +3,7 @@
 //! Lando extends the [crowbar](https://crates.io/crates/crowbar) crate with
 //! type-safe interfaces exposing [API gateway](https://aws.amazon.com/api-gateway/) proxy events
 //! as standard Rust [http](https://crates.io/crates/http) types. For convenience,
-//! `lando` re-exports `http::Request` and `http::Response` types.
+//! `lando` re-exports `http::Request` and `http::Response`.
 //!
 //! AWS lambda is a ✨ **fully managed** ✨ compute service meaning that you do not need
 //! to own or operate any of the servers your application will run on, freeing
@@ -14,26 +14,22 @@
 //!
 //! # Usage
 //!
-//! Add both `lando` and `cpython` as dependencies to your `Cargo.toml`
+//! Add both `lando` to your `Cargo.toml`
 //!
 //! ```toml
 //! [dependencies]
-//! cpython = "0.1"
 //! lando = "0.1"
 //! ```
 //!
-//! Within your libraries source, use the macros from both crates
+//! Within your application's source, use lando's macros.
 //!
 //! ```rust,ignore
-//! // the following imports macros needed by the gateway macro
 //! #[macro_use]
-//! extern crate cpython;
-//! #[macro_use(gateway)]
 //! extern crate lando;
 //! ```
 //!
 //! And write your function using the [gateway!](macro.gateway.html) macro. See
-//! It's documentation for more examples.
+//! it's documentation for more examples.
 //!
 //! ```rust
 //! # #[macro_use] extern crate cpython;
@@ -70,8 +66,8 @@
 //!
 //! > 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
-//! `cargo build` will then produce an AWS-deployable `liblambda.so` binary artifact.
-//! Package this file in a zip file and its now deployable as an AWS Lambda function!
+//! `cargo build` will then produce an AWS deploy-ready `liblambda.so` binary artifact.
+//! Package this file in a zip file and it's now deployable as an AWS Lambda function!
 //! Be sure to use the the Python 3.6 execution environment with the handler
 //! configured as `liblambda.handler`.
 //!
@@ -85,7 +81,15 @@
 extern crate pretty_assertions;
 extern crate base64;
 extern crate bytes;
-extern crate cpython;
+// in addition to cpython types we use its macros in our macro
+// py_module_initializer!, py_fn!
+// we export and pub use those so that consumers of this
+// need only have to declare one dependency
+#[doc(hidden)]
+pub extern crate cpython;
+#[doc(hidden)]
+pub use cpython::*;
+
 extern crate crowbar;
 extern crate failure;
 #[macro_use]
@@ -107,6 +111,8 @@ use cpython::Python;
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
 pub use crowbar::LambdaContext;
+
+// Ours
 
 mod body;
 mod ext;
@@ -161,14 +167,11 @@ where
 /// fn handler(request: Request, context: LambdaContext) -> Result
 /// ```
 ///
-/// To use this macro, you need to `macro_use` both crowbar *and* cpython, because crowbar
-/// references multiple cpython macros.
+/// To use this macro, you need the following `macro_use` declaration
 ///
 /// ```rust,ignore
-/// #[macro_use(gateway)]
-/// extern crate lando;
 /// #[macro_use]
-/// extern crate cpython;
+/// extern crate lando;
 /// ```
 ///
 /// # Examples
@@ -176,8 +179,7 @@ where
 /// You can export a lambda-ready function by wrapping a closure with `gateway!`:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate lando;
-/// # #[macro_use] extern crate cpython;
+/// # #[macro_use] extern crate lando;
 /// # fn main() {
 /// gateway!(|request, context| {
 ///     println!("{:?}", request);
@@ -188,15 +190,14 @@ where
 ///
 /// You can also the provide `gateway!` macro with a named function
 ///
-/// The request argument is just a regular `http::Request` type but you can
-/// extend with API gateway features, like path and query string parameters, and
+/// The request argument is just a regular `http::Request` type
+/// extendable with API gateway features, like accessing path and query string parameters, and
 /// more by importing [lando::RequestExt`](trait.RequestExt.html)
 ///
-/// The context argument is [same type](struct.LambdaContext.html) used within the crowbar crate
+/// The context argument is [same type](struct.LambdaContext.html) defined within the crowbar crate
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate lando;
-/// # #[macro_use] extern crate cpython;
+/// # #[macro_use] extern crate lando;
 /// # fn main() {
 /// use lando::{LambdaContext, Request, Response, Result, Body};
 ///
@@ -214,8 +215,7 @@ where
 /// You can export multiple functions in the same module with a format similar to a `match` expression:
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate lando;
-/// # #[macro_use] extern crate cpython;
+/// # #[macro_use] extern crate lando;
 /// # fn main() {
 /// use lando::Response;
 ///
@@ -245,8 +245,7 @@ where
 /// macro is stablized.
 ///
 /// ```rust
-/// # #[macro_use(gateway)] extern crate lando;
-/// # #[macro_use] extern crate cpython;
+/// # #[macro_use] extern crate lando;
 /// # fn main() {
 /// gateway! {
 ///     crate (libsolo, initlibsolo, PyInit_libsolo) {
