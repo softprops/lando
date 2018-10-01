@@ -32,8 +32,7 @@
 //! it's documentation for more examples.
 //!
 //! ```rust
-//! # #[macro_use] extern crate cpython;
-//! # #[macro_use(gateway)] extern crate lando;
+//! # #[macro_use] extern crate lando;
 //! # fn main() {
 //! gateway!(|_request, context| {
 //!     println!("👋 cloudwatch logs, this is {}", context.function_name());
