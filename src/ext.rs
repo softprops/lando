@@ -5,14 +5,16 @@ use std::collections::HashMap;
 
 // Third Party
 use body::Body;
-use request::{GatewayRequest, RequestContext};
-use response::GatewayResponse;
-use rust_http::header::CONTENT_TYPE;
-use rust_http::{Request as HttpRequest, Response as HttpResponse};
+use http::header::CONTENT_TYPE;
+use http::{Request as HttpRequest, Response as HttpResponse};
 use serde::de::value::Error as SerdeError;
 use serde::Deserialize;
 use serde_json;
 use serde_urlencoded;
+
+// Ours
+use request::{GatewayRequest, RequestContext};
+use response::GatewayResponse;
 
 /// API gateway pre-parsed http query string parameters
 struct QueryStringParameters(HashMap<String, String>);
@@ -35,7 +37,7 @@ pub enum PayloadError {
     WwwFormUrlEncoded(SerdeError),
 }
 
-/// Extentions for `lando::Request` objects that
+/// Extentions for `lando::Request` structs that
 /// provide access to [API gateway features](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
 ///
 /// In addition, you can also access a request's body in deserialized format
@@ -76,16 +78,21 @@ pub enum PayloadError {
 /// # }
 /// ```
 pub trait RequestExt {
-    /// Return pre-parsed http query string parameters
-    /// associated with the API gateway request
+    /// Return pre-parsed http query string parameters, parameters
+    /// provided after the `?` portion of a url,
+    /// associated with the API gateway request. No query parameters
+    /// will yield an empty HashMap.
     fn query_string_parameters(&self) -> HashMap<String, String>;
-    /// Return pre-extracted path parameters
-    /// associated with the API gateway request
+    /// Return pre-extracted path parameters, parameter provided in url placeholders
+    /// `/foo/{bar}/baz/{boom}`,
+    /// associated with the API gateway request. No path parameters
+    /// will yield an empty HashMap
     fn path_parameters(&self) -> HashMap<String, String>;
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
-    /// associated with the API gateway request
+    /// associated with the API gateway request. No stage parameters
+    /// will yield an empty HashMap
     fn stage_variables(&self) -> HashMap<String, String>;
-    /// Return request context assocaited with the API gateway request
+    /// Return request context data assocaited with the API gateway request
     fn request_context(&self) -> RequestContext;
 
     /// Return the Result of a payload parsed into a serde Deserializeable
@@ -95,8 +102,8 @@ pub trait RequestExt {
     /// and `application/json` flavors of content type
     /// are supported
     ///
-    /// A [PayloadError](enum.PayloadError.html) will be for undeserializable
-    /// payloads. If no body is provided `Ok(None)` will be returned.
+    /// A [PayloadError](enum.PayloadError.html) will be returned for undeserializable
+    /// payloads. If no body is provided, `Ok(None)` will be returned.
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
     where
         for<'de> D: Deserialize<'de>;
@@ -145,8 +152,7 @@ impl RequestExt for HttpRequest<super::Body> {
                     .map_err(PayloadError::Json)
                     .map(Some),
                 _ => Ok(None),
-            })
-            .unwrap_or_else(|| Ok(None))
+            }).unwrap_or_else(|| Ok(None))
     }
 }
 
@@ -165,8 +171,7 @@ where
                     k.as_str().to_owned(),
                     v.to_str().unwrap_or_default().to_owned(),
                 )
-            })
-            .collect::<HashMap<String, String>>();
+            }).collect::<HashMap<String, String>>();
 
         GatewayResponse {
             status_code: value.status().as_u16(),
@@ -224,16 +229,15 @@ impl From<GatewayRequest> for HttpRequest<Body> {
                     Body::from(b.as_str())
                 },
                 _ => Body::from(()),
-            })
-            .expect("failed to build request")
+            }).expect("failed to build request")
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::GatewayRequest;
-    use rust_http::header::{CONTENT_TYPE, HOST};
-    use rust_http::Request as HttpRequest;
+    use http::header::{CONTENT_TYPE, HOST};
+    use http::Request as HttpRequest;
     use std::collections::HashMap;
     use RequestExt;
 

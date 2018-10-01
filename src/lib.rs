@@ -32,7 +32,8 @@
 //! extern crate lando;
 //! ```
 //!
-//! And write your function using the [gateway!](macro.gateway.html) macro
+//! And write your function using the [gateway!](macro.gateway.html) macro. See
+//! It's documentation for more examples.
 //!
 //! ```rust
 //! # #[macro_use] extern crate cpython;
@@ -89,7 +90,8 @@ extern crate crowbar;
 extern crate failure;
 #[macro_use]
 extern crate failure_derive;
-extern crate http as rust_http;
+// re-export for convenience
+pub extern crate http;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -107,20 +109,20 @@ pub use cpython::{PyObject, PyResult};
 pub use crowbar::LambdaContext;
 
 mod body;
-mod http;
+mod ext;
 pub mod request;
 mod response;
 
 pub use body::Body;
-pub use http::{PayloadError, RequestExt};
+pub use ext::{PayloadError, RequestExt};
 pub use request::GatewayRequest;
 
 /// A re-exported version of `http::Request` with a type
 /// parameter for body fixed to type [lando::Body](enum.Body.html)
-pub type Request = rust_http::Request<Body>;
+pub type Request = http::Request<Body>;
 
 /// A re-exported version of the `http::Response` type
-pub use rust_http::Response;
+pub use http::Response;
 
 /// Result type for gateway functions
 pub type Result = StdResult<Response<Body>, Box<StdError>>;
@@ -256,6 +258,7 @@ where
 ///     }
 /// };
 /// # }
+///
 /// ```
 #[macro_export]
 macro_rules! gateway {
@@ -294,7 +297,7 @@ macro_rules! gateway {
                             initliblambda,
                             PyInit_liblambda)
                   @handlers ($($handler => $target),*) }
-    };
+ };
     ($($handler:expr => $target:expr,)*) => {
         gateway! { $($handler => $target),* }
     };

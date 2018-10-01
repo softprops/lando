@@ -1,3 +1,50 @@
+# 0.1.2
+
+* ease dependency declartions by re-exporting `http` crate
+
+before
+
+in your `Cargo.toml` file
+
+```toml
+[dependencies]
+lando = "0.1"
+http = "0.1" # need to depend on http crate explicitly
+...
+```
+
+in your `src/lib.rs`
+
+```rust
+#[macro_use]
+extern crate lando;
+// need to extern http crate explicitly
+extern crate http;
+...
+
+use http::{Method, StatusCode};
+```
+
+after
+
+in your `Cargo.toml`
+
+```toml
+[dependencies]
+lando = "0.1" # no longer need to add a dependency on http explicitly
+...
+```
+
+in your `src/lib.rs`
+
+```rust
+#[macro_use]
+extern crate lando;
+...
+// consume http re-export from lando crate
+use lando::http::{Method, StatusCode};
+```
+
 # 0.1.1
 
 * bug fix - support for reading host from "host" (lowercase) in addition to "Host"

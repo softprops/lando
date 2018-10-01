@@ -1,4 +1,4 @@
-//! Request types
+//! API Gateway request types. Typically these are exposed via the `request_context` method provided by [lando::RequestExt](trait.RequestExt.html)
 
 // Std
 use std::collections::HashMap;
