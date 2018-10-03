@@ -152,7 +152,8 @@ impl RequestExt for HttpRequest<super::Body> {
                     .map_err(PayloadError::Json)
                     .map(Some),
                 _ => Ok(None),
-            }).unwrap_or_else(|| Ok(None))
+            })
+            .unwrap_or_else(|| Ok(None))
     }
 }
 
@@ -171,7 +172,8 @@ where
                     k.as_str().to_owned(),
                     v.to_str().unwrap_or_default().to_owned(),
                 )
-            }).collect::<HashMap<String, String>>();
+            })
+            .collect::<HashMap<String, String>>();
 
         GatewayResponse {
             status_code: value.status().as_u16(),
@@ -222,14 +224,17 @@ impl From<GatewayRequest> for HttpRequest<Body> {
 
         builder
             .body(match body {
-                Some(b) => if is_base64_encoded {
-                    // todo: document failure behavior
-                    Body::from(::base64::decode(&b).unwrap_or_default())
-                } else {
-                    Body::from(b.as_str())
-                },
+                Some(b) => {
+                    if is_base64_encoded {
+                        // todo: document failure behavior
+                        Body::from(::base64::decode(&b).unwrap_or_default())
+                    } else {
+                        Body::from(b.as_str())
+                    }
+                }
                 _ => Body::from(()),
-            }).expect("failed to build request")
+            })
+            .expect("failed to build request")
     }
 }
 

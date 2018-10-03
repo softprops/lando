@@ -88,7 +88,8 @@ mod tests {
             GatewayRequest {
                 path: "/foo".into(),
                 ..Default::default()
-            }.path,
+            }
+            .path,
             "/foo"
         )
     }

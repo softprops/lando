@@ -10,6 +10,6 @@ use serde_json::Value;
 
 #[bench]
 fn gateway_conversion(b: &mut test::Bencher) {
-  let event = serde_json::from_str::<Value>(include_str!("request.json")).unwrap();
-  b.iter(|| serde_json::from_value::<GatewayRequest>(event.clone()).unwrap());
+    let event = serde_json::from_str::<Value>(include_str!("request.json")).unwrap();
+    b.iter(|| serde_json::from_value::<GatewayRequest>(event.clone()).unwrap());
 }
