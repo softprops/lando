@@ -32,8 +32,8 @@ addons:
 install: |
   rustup toolchain install nightly
   rustup component add rustfmt-preview --toolchain nightly
-  if [[ "$TRAVIS_RUST_VERSION" == stable ]] && [[ $(cargo +nightly tarpaulin --version) != *0.6.2 ]]; then
-    `RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo +nightly install --force --version 0.6.2  cargo-tarpaulin`
+  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+    `RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo +nightly install cargo-tarpaulin`
   fi
 
 after_success:
