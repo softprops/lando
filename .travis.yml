@@ -33,7 +33,7 @@ install: |
   rustup toolchain install nightly
   rustup component add rustfmt-preview --toolchain nightly
   if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
-    `RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo +nightly install cargo-tarpaulin`
+    `RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo +nightly install --force cargo-tarpaulin`
   fi
 
 after_success:
