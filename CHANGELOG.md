@@ -1,4 +1,4 @@
-# 0.1.2
+# 0.1.2 (unreleased)
 
 * ease dependency declartions by re-exporting `http` crate
 
