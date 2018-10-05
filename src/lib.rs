@@ -297,8 +297,8 @@ macro_rules! gateway {
         // https://github.com/rust-lang/rust/issues/29599
         mashup! {
             m["modulename"] = lib env!("CARGO_PKG_NAME");
-            m["py2_init"] =  initlib env!("CARGO_PKG_NAME");
-            m["py3_init"] =  PyInit_lib env!("CARGO_PKG_NAME");
+            m["py2_init"] = initlib env!("CARGO_PKG_NAME");
+            m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
         }
         m! {
           gateway! { @module ("modulename", "py2_init", "py3_init")
