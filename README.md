@@ -163,7 +163,7 @@ A key benefit of AWS lambda is that the _platform_ handles concurrency by spawni
 they way you only pay for what you use. Bear in mind you are billed at intervals of 100 milliseconds,
 so the usefulness optimizing for cost is lost once you're dipped below that point.
 
-# 🚧 planned changes
+## 🚧 planned changes
 
 * remove the need for explicit dependency on cpython
 * remove the need for awkward dependency on lambda lib name
