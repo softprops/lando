@@ -95,6 +95,10 @@ extern crate failure;
 extern crate failure_derive;
 // re-export for convenience
 pub extern crate http;
+#[doc(hidden)]
+pub extern crate mashup;
+#[doc(hidden)]
+pub use mashup::*;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -187,18 +191,18 @@ where
 /// # }
 /// ```
 ///
-/// You can also the provide `gateway!` macro with a named function
+/// You can also the provide `gateway!` macro with a function reference
 ///
-/// The request argument is just a regular `http::Request` type
+/// The `request` argument is just a regular `http::Request` type,
 /// extendable with API gateway features, like accessing path and query string parameters, and
 /// more by importing [lando::RequestExt`](trait.RequestExt.html)
 ///
-/// The context argument is [same type](struct.LambdaContext.html) defined within the crowbar crate
+/// The context argument is [same type](struct.LambdaContext.html) defined within the crowbar crate.
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
 /// # fn main() {
-/// use lando::{LambdaContext, Request, Response, Result, Body};
+/// use lando::{LambdaContext, Request, Response, Result};
 ///
 /// fn handler(request: Request, context: LambdaContext) -> Result {
 ///     println!("{:?}", request);
@@ -209,7 +213,7 @@ where
 /// # }
 /// ```
 ///
-/// # Multiple functions
+/// # Export multiple lambda functions in one library
 ///
 /// You can export multiple functions in the same module with a format similar to a `match` expression:
 ///
@@ -225,39 +229,6 @@ where
 /// # }
 /// ```
 ///
-/// # Changing the dynamic library name
-///
-/// Be default, lando assumes a library named "lambda", If you need to change the
-/// name of the resulting dynamic library that gets built,
-///  you first need to change the `[lib]` section in your Cargo.toml file
-///
-/// ```toml
-/// [lib]
-/// name = "solo"
-/// crate-type = ["cdylib"]
-/// ```
-///
-/// You then also need to change the names of the library identifiers, expected by
-/// the [cpython crate](https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html),
-/// by using the following `gateway!` format. This pattern may no longer needed
-/// the std library's [concat_idents!](https://doc.rust-lang.org/std/macro.concat_idents.html)
-/// macro is stablized.
-///
-/// ```rust
-/// # #[macro_use] extern crate lando;
-/// # fn main() {
-/// gateway! {
-///     crate (libsolo, initlibsolo, PyInit_libsolo) {
-///         "handler" => |request, context| {
-///            Ok(lando::Response::new(
-///               "hello from libsolo"
-///            ))
-///         }
-///     }
-/// };
-/// # }
-///
-/// ```
 #[macro_export]
 macro_rules! gateway {
     (@module ($module:ident, $py2:ident, $py3:ident)
@@ -291,11 +262,16 @@ macro_rules! gateway {
         // dynamic
         // see also https://www.ncameron.org/blog/untitledconcat_idents-and-macros-in-ident-position/
         // https://github.com/rust-lang/rust/issues/29599
-        gateway! { @module (liblambda,
-                            initliblambda,
-                            PyInit_liblambda)
+        mashup! {
+            m["modulename"] = lib env!("CARGO_PKG_NAME");
+            m["py2_init"] = initlib env!("CARGO_PKG_NAME");
+            m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
+        }
+        m! {
+          gateway! { @module ("modulename", "py2_init", "py3_init")
                   @handlers ($($handler => $target),*) }
- };
+        }
+    };
     ($($handler:expr => $target:expr,)*) => {
         gateway! { $($handler => $target),* }
     };
