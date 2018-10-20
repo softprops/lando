@@ -75,12 +75,17 @@ where
 
 #[cfg(test)]
 mod tests {
-
     use std::collections::HashMap;
-
     use serde_json;
+    use super::*;
 
-    use super::{nullable_default, GatewayRequest};
+    #[test]
+    fn deserializes_request_events() {
+        // from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        let input = include_str!("../tests/data/proxy_request.json");
+        assert!(serde_json::from_str::<GatewayRequest>(&input).is_ok())
+    }
 
     #[test]
     fn implements_default() {
