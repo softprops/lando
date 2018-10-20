@@ -75,9 +75,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use serde_json;
     use super::*;
+    use serde_json;
+    use std::collections::HashMap;
 
     #[test]
     fn deserializes_request_events() {
