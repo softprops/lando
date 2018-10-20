@@ -70,7 +70,7 @@ where
     T: Default + Deserialize<'de>,
 {
     let opt = Option::deserialize(deserializer)?;
-    Ok(opt.unwrap_or_else(|| Default::default()))
+    Ok(opt.unwrap_or_else(Default::default))
 }
 
 #[cfg(test)]
