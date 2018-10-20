@@ -114,26 +114,26 @@ impl RequestExt for HttpRequest<super::Body> {
         self.extensions()
             .get::<QueryStringParameters>()
             .map(|ext| ext.0.clone())
-            .unwrap_or(Default::default())
+            .unwrap_or_else(Default::default)
     }
     fn path_parameters(&self) -> HashMap<String, String> {
         self.extensions()
             .get::<PathParameters>()
             .map(|ext| ext.0.clone())
-            .unwrap_or(Default::default())
+            .unwrap_or_else(Default::default)
     }
     fn stage_variables(&self) -> HashMap<String, String> {
         self.extensions()
             .get::<StageVariables>()
             .map(|ext| ext.0.clone())
-            .unwrap_or(Default::default())
+            .unwrap_or_else(Default::default)
     }
 
     fn request_context(&self) -> RequestContext {
         self.extensions()
             .get::<RequestContext>()
-            .map(|ext| ext.clone())
-            .unwrap_or(Default::default())
+            .cloned()
+            .unwrap_or_else(Default::default)
     }
 
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
@@ -181,7 +181,7 @@ where
                 Body::Empty => None,
                 Body::Bytes(b) => Some(String::from_utf8_lossy(b.as_ref()).to_string()),
             },
-            headers: headers,
+            headers,
             is_base64_encoded: Default::default(), // todo: infer from Content-{Encoding,Type} headers
         }
     }
@@ -241,7 +241,6 @@ impl From<GatewayRequest> for HttpRequest<Body> {
 #[cfg(test)]
 mod tests {
     use super::GatewayRequest;
-    use http::header::{CONTENT_TYPE, HOST};
     use http::Request as HttpRequest;
     use std::collections::HashMap;
     use RequestExt;
@@ -249,11 +248,11 @@ mod tests {
     #[test]
     fn requests_convert() {
         let mut headers = HashMap::new();
-        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert("Host".to_string(), "www.rust-lang.org".to_owned());
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
             http_method: "GET".into(),
-            headers: headers,
+            headers,
             ..Default::default()
         };
         let expected = HttpRequest::get("https://www.rust-lang.org/foo")
@@ -267,13 +266,13 @@ mod tests {
     #[test]
     fn requests_have_query_string_ext() {
         let mut headers = HashMap::new();
-        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert("Host".to_string(), "www.rust-lang.org".to_owned());
         let mut query = HashMap::new();
         query.insert("foo".to_owned(), "bar".to_owned());
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
             http_method: "GET".into(),
-            headers: headers,
+            headers,
             query_string_parameters: query.clone(),
             ..Default::default()
         };
@@ -284,9 +283,9 @@ mod tests {
     #[test]
     fn requests_have_form_post_parseable_payloads() {
         let mut headers = HashMap::new();
-        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert("Host".to_string(), "www.rust-lang.org".to_owned());
         headers.insert(
-            CONTENT_TYPE.as_str().to_string(),
+            "Content-Type".to_string(),
             "application/x-www-form-urlencoded".to_owned(),
         );
         #[derive(Deserialize, PartialEq, Debug)]
@@ -297,7 +296,7 @@ mod tests {
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
             http_method: "GET".into(),
-            headers: headers,
+            headers,
             body: Some("foo=bar&baz=2".into()),
             ..Default::default()
         };
@@ -315,15 +314,15 @@ mod tests {
     #[test]
     fn requests_have_form_post_parseable_payloads_for_hashmaps() {
         let mut headers = HashMap::new();
-        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
+        headers.insert("Host".to_string(), "www.rust-lang.org".to_owned());
         headers.insert(
-            CONTENT_TYPE.as_str().to_string(),
+            "Content-Type".to_string(),
             "application/x-www-form-urlencoded".to_owned(),
         );
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
             http_method: "GET".into(),
-            headers: headers,
+            headers,
             body: Some("foo=bar&baz=2".into()),
             ..Default::default()
         };
@@ -338,11 +337,8 @@ mod tests {
     #[test]
     fn requests_have_json_parseable_payloads() {
         let mut headers = HashMap::new();
-        headers.insert(HOST.as_str().to_string(), "www.rust-lang.org".to_owned());
-        headers.insert(
-            CONTENT_TYPE.as_str().to_string(),
-            "application/json".to_owned(),
-        );
+        headers.insert("Host".to_string(), "www.rust-lang.org".to_owned());
+        headers.insert("Content-Type".to_string(), "application/json".to_owned());
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
@@ -351,7 +347,7 @@ mod tests {
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
             http_method: "GET".into(),
-            headers: headers,
+            headers,
             body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
             ..Default::default()
         };
