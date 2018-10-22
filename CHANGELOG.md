@@ -1,4 +1,4 @@
-# 0.1.2 (unreleased)
+# 0.2 (unreleased)
 
 * ease dependency declartions by re-exporting `http` crate
 
@@ -80,6 +80,14 @@ lando = "0.1" # no longer need to declar cpython as an explicit dependency
 #[macro_use]
 extern crate lando; // impl details are hidden
 ```
+
+* reduced exposed surface area of internal interfaces
+
+`lando::GatewayRequest` still is still public (for benchmarking) but its fields are not
+
+* reduced cost of transformations between lambda proxy types and rust native `http` crate types
+
+Replaced many owned `String` types with `Cow`. Now deserializing and serializing request headers directly to `http::HeaderMap`
 
 # 0.1.1
 

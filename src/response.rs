@@ -1,8 +1,13 @@
 //! Response types
 
 // Std
-use std::collections::HashMap;
 use std::ops::Not;
+
+use http::header::{HeaderMap, HeaderValue};
+use http::Response as HttpResponse;
+use serde::{ser::Error as SerError, ser::SerializeMap, Serializer};
+
+use body::Body;
 
 /// Representation of API Gateway response
 ///
@@ -11,8 +16,11 @@ use std::ops::Not;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GatewayResponse {
     pub status_code: u16,
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    pub headers: HashMap<String, String>,
+    #[serde(
+        skip_serializing_if = "HeaderMap::is_empty",
+        serialize_with = "serialize_headers"
+    )]
+    pub headers: HeaderMap<HeaderValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
     #[serde(skip_serializing_if = "Not::not")]
@@ -26,6 +34,36 @@ impl Default for GatewayResponse {
             headers: Default::default(),
             body: Default::default(),
             is_base64_encoded: Default::default(),
+        }
+    }
+}
+
+fn serialize_headers<S>(headers: &HeaderMap<HeaderValue>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
+    for key in headers.keys() {
+        let map_value = headers[key].to_str().map_err(S::Error::custom)?;
+        map.serialize_entry(key.as_str(), map_value)?;
+    }
+    map.end()
+}
+
+impl<T> From<HttpResponse<T>> for GatewayResponse
+where
+    T: Into<Body>,
+{
+    fn from(value: HttpResponse<T>) -> Self {
+        let (parts, body) = value.into_parts();
+        GatewayResponse {
+            status_code: parts.status.as_u16(),
+            body: match body.into() {
+                Body::Empty => None,
+                Body::Bytes(b) => Some(String::from_utf8_lossy(b.as_ref()).to_string()),
+            },
+            headers: parts.headers,
+            is_base64_encoded: Default::default(), // todo: infer from Content-{Encoding,Type} headers
         }
     }
 }

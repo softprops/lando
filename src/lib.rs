@@ -124,6 +124,7 @@ mod response;
 
 pub use body::Body;
 pub use ext::{PayloadError, RequestExt};
+// for benches only!
 pub use request::GatewayRequest;
 
 /// A re-exported version of `http::Request` with a type
