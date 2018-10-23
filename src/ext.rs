@@ -1,4 +1,4 @@
-//! conversions to and from internal gateway types and http crate types
+//! Extension methods for `http::Request` types
 
 // Std
 use std::collections::HashMap;

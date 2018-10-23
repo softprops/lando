@@ -10,8 +10,6 @@ use serde::{ser::Error as SerError, ser::SerializeMap, Serializer};
 use body::Body;
 
 /// Representation of API Gateway response
-///
-/// # Examples
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GatewayResponse {
@@ -22,7 +20,7 @@ pub(crate) struct GatewayResponse {
     )]
     pub headers: HeaderMap<HeaderValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub body: Option<String>,
+    pub body: Option<Body>,
     #[serde(skip_serializing_if = "Not::not")]
     pub is_base64_encoded: bool,
 }
@@ -55,15 +53,17 @@ where
     T: Into<Body>,
 {
     fn from(value: HttpResponse<T>) -> Self {
-        let (parts, body) = value.into_parts();
+        let (parts, bod) = value.into_parts();
+        let (is_base64_encoded, body) = match bod.into() {
+            Body::Empty => (false, None),
+            b @ Body::Text(_) => (false, Some(b)),
+            b @ Body::Binary(_) => (true, Some(b)),
+        };
         GatewayResponse {
             status_code: parts.status.as_u16(),
-            body: match body.into() {
-                Body::Empty => None,
-                Body::Bytes(b) => Some(String::from_utf8_lossy(b.as_ref()).to_string()),
-            },
+            body,
             headers: parts.headers,
-            is_base64_encoded: Default::default(), // todo: infer from Content-{Encoding,Type} headers
+            is_base64_encoded,
         }
     }
 }
