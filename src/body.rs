@@ -18,7 +18,11 @@ use serde::ser::{Error as SerError, Serialize, Serializer};
 ///
 /// # Examples
 ///
-/// Body types are inferred with `From` implementations. Types like `String`, `str` whose type reflects
+/// Body types are inferred with `From` implementations.
+///
+/// ## Text
+///
+/// Types like `String`, `str` whose type reflects
 /// text produce `Body::Text` variants
 ///
 /// ```
@@ -28,6 +32,8 @@ use serde::ser::{Error as SerError, Serialize, Serializer};
 /// })
 /// ```
 ///
+/// ## Binary
+///
 /// Types like `Vec<u8>` and `&[u8]` whose types reflect raw bytes produce `Body::Binary` variants
 ///
 /// ```
@@ -36,6 +42,10 @@ use serde::ser::{Error as SerError, Serialize, Serializer};
 ///   _ => false
 /// })
 /// ```
+///
+/// `Binary` responses bodies will automatcally get based64 encoded to meet API gateway's expectations.
+///
+/// ## Empty
 ///
 /// The unit type ( `()` ) whose type represents an empty value produces `Body::Empty` variants
 ///
