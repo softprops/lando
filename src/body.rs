@@ -12,6 +12,41 @@ use serde::ser::{Error as SerError, Serialize, Serializer};
 /// Representation of http request and response bodies as supported
 /// by API Gateway.
 ///
+/// These come in three flavors `Empty` ( to body ), `Text` ( text data ), `Binary` ( binary data ).
+///
+/// Body types can be `Deref` and `AsRef`'d into `[u8]` types much like the `hyper` crate
+///
+/// # Examples
+///
+/// Body types are inverted with `From` implementations. Types like `String`, `str` whose type reflects
+/// text produce `Body::Text` variants
+///
+/// ```
+/// assert!(match lando::Body::from("text") {
+///   lando::Body::Text(_) => true,
+///   _ => false
+/// })
+/// ```
+///
+/// Types like `Vec<u8>` and `&[u8]` whose types reflect raw bytes produce `Body::Binary` variants
+///
+/// ```
+/// assert!(match lando::Body::from("text".as_bytes()) {
+///   lando::Body::Binary(_) => true,
+///   _ => false
+/// })
+/// ```
+///
+/// The unit type ( `()` ) whose type represents an empty value produces `Body::Empty` variants
+///
+/// ```
+/// assert!(match lando::Body::from(()) {
+///   lando::Body::Empty => true,
+///   _ => false
+/// })
+/// ```
+///
+///
 /// For more information about API Gateway's body types,
 /// refer to [this documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html).
 #[derive(Debug, PartialEq)]

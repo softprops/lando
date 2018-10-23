@@ -10,8 +10,6 @@ use serde::{ser::Error as SerError, ser::SerializeMap, Serializer};
 use body::Body;
 
 /// Representation of API Gateway response
-///
-/// # Examples
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GatewayResponse {
