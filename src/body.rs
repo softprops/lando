@@ -2,18 +2,26 @@
 
 // Std
 use std::borrow::Cow;
-
-// Third Party
-use bytes::Bytes;
 use std::ops::Deref;
 
-/// Representation of http request and response bodies
-#[derive(Debug)]
+// Third Party
+use base64::display::Base64Display;
+use bytes::Bytes;
+use serde::ser::{Error as SerError, Serialize, Serializer};
+
+/// Representation of http request and response bodies as supported
+/// by API Gateway.
+///
+/// For more information about API Gateway's body types,
+/// refer to [this documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html).
+#[derive(Debug, PartialEq)]
 pub enum Body {
     /// An empty body
     Empty,
-    /// A body containing some bytes
-    Bytes(Bytes),
+    /// A body containing string data
+    Text(Bytes),
+    /// A body containing binary data
+    Binary(Bytes),
 }
 
 impl Default for Body {
@@ -30,25 +38,13 @@ impl From<()> for Body {
 
 impl<'a> From<&'a str> for Body {
     fn from(s: &'a str) -> Self {
-        Body::Bytes(Bytes::from(s))
-    }
-}
-
-impl From<Vec<u8>> for Body {
-    fn from(b: Vec<u8>) -> Self {
-        Body::Bytes(Bytes::from(b))
-    }
-}
-
-impl<'a> From<&'a [u8]> for Body {
-    fn from(b: &'a [u8]) -> Self {
-        Body::Bytes(Bytes::from(b))
+        Body::Text(Bytes::from(s))
     }
 }
 
 impl From<String> for Body {
     fn from(b: String) -> Self {
-        Body::Bytes(Bytes::from(b))
+        Body::Text(Bytes::from(b))
     }
 }
 
@@ -72,6 +68,18 @@ impl From<Cow<'static, [u8]>> for Body {
     }
 }
 
+impl From<Vec<u8>> for Body {
+    fn from(b: Vec<u8>) -> Self {
+        Body::Binary(Bytes::from(b))
+    }
+}
+
+impl<'a> From<&'a [u8]> for Body {
+    fn from(b: &'a [u8]) -> Self {
+        Body::Binary(Bytes::from(b))
+    }
+}
+
 impl Deref for Body {
     type Target = [u8];
 
@@ -86,7 +94,101 @@ impl AsRef<[u8]> for Body {
     fn as_ref(&self) -> &[u8] {
         match self {
             Body::Empty => &[],
-            Body::Bytes(ref bytes) => bytes,
+            Body::Text(ref bytes) => bytes,
+            Body::Binary(ref bytes) => bytes,
         }
+    }
+}
+
+impl<'a> Serialize for Body {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Body::Text(data) => {
+                serializer.serialize_str(::std::str::from_utf8(data).map_err(S::Error::custom)?)
+            }
+            Body::Binary(data) => serializer.collect_str(&Base64Display::standard(data)),
+            Body::Empty => serializer.serialize_unit(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json;
+    use std::collections::HashMap;
+
+    #[test]
+    fn body_has_default() {
+        assert_eq!(Body::default(), Body::Empty);
+    }
+
+    #[test]
+    fn from_unit() {
+        assert_eq!(Body::from(()), Body::Empty);
+    }
+
+    #[test]
+    fn from_str() {
+        match Body::from(String::from("foo").as_str()) {
+            Body::Text(_) => (),
+            not => assert!(false, "expected Body::Text(...) got {:?}", not),
+        }
+    }
+
+    #[test]
+    fn from_string() {
+        match Body::from(String::from("foo")) {
+            Body::Text(_) => (),
+            not => assert!(false, "expected Body::Text(...) got {:?}", not),
+        }
+    }
+
+    #[test]
+    fn from_cow_str() {
+        match Body::from(Cow::from("foo")) {
+            Body::Text(_) => (),
+            not => assert!(false, "expected Body::Text(...) got {:?}", not),
+        }
+    }
+
+    #[test]
+    fn from_cow_bytes() {
+        match Body::from(Cow::from("foo".as_bytes())) {
+            Body::Binary(_) => (),
+            not => assert!(false, "expected Body::Binary(...) got {:?}", not),
+        }
+    }
+
+    #[test]
+    fn from_bytes() {
+        match Body::from("foo".as_bytes()) {
+            Body::Binary(_) => (),
+            not => assert!(false, "expected Body::Binary(...) got {:?}", not),
+        }
+    }
+
+    #[test]
+    fn serialize_text() {
+        let mut map = HashMap::new();
+        map.insert("foo", Body::from("bar"));
+        assert_eq!(serde_json::to_string(&map).unwrap(), r#"{"foo":"bar"}"#);
+    }
+
+    #[test]
+    fn serialize_binary() {
+        let mut map = HashMap::new();
+        map.insert("foo", Body::from("bar".as_bytes()));
+        assert_eq!(serde_json::to_string(&map).unwrap(), r#"{"foo":"YmFy"}"#);
+    }
+
+    #[test]
+    fn serialize_empty() {
+        let mut map = HashMap::new();
+        map.insert("foo", Body::Empty);
+        assert_eq!(serde_json::to_string(&map).unwrap(), r#"{"foo":null}"#);
     }
 }
