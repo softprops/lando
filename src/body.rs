@@ -18,7 +18,7 @@ use serde::ser::{Error as SerError, Serialize, Serializer};
 ///
 /// # Examples
 ///
-/// Body types are inverted with `From` implementations. Types like `String`, `str` whose type reflects
+/// Body types are inferred with `From` implementations. Types like `String`, `str` whose type reflects
 /// text produce `Body::Text` variants
 ///
 /// ```
