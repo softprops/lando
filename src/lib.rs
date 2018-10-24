@@ -1,20 +1,20 @@
-//! Lando provides building blocks for serverless HTTP Rust applications deployable on [AWS lambda](https://aws.amazon.com/lambda/).
+//! Lando provides building blocks for serverless HTTP Rust applications deployable on [AWS Lambda](https://aws.amazon.com/lambda/).
 //!
-//! Lando extends the [crowbar](https://crates.io/crates/crowbar) crate with
-//! type-safe interfaces exposing [API gateway](https://aws.amazon.com/api-gateway/) proxy events
-//! as standard Rust [http](https://crates.io/crates/http) types. For convenience,
+//! Specifically, lando exposes [API Gateway](https://aws.amazon.com/api-gateway/) proxy events
+//! as standard Rust [http](https://crates.io/crates/http) types with API Gateway
+//! modeled [Bodies](enum.Body.html). For convenience,
 //! `lando` re-exports `http::Request` and `http::Response`.
 //!
-//! AWS lambda is a ✨ **fully managed** ✨ compute service meaning that you do not need
-//! to own or operate any of the servers your application will run on, freeing
-//! you up to **focus on your application**. You can consider Lambda AWS's Function-As-A-Service offering.
+//! AWS Lambda is a ✨ **fully managed** ✨ compute service allowing you to run
+//! code without thinking about servers. AWS will providing monitoring metrics and scaling
+//! out of the box for you.
 //!
 //! Lando exports Rust functions as native CPython modules making it possible to embed
-//! handlers within AWS' [python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
+//! handlers within AWS' [Python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
 //!
 //! # Usage
 //!
-//! Add both `lando` to your `Cargo.toml`
+//! Add `lando` to your `Cargo.toml`
 //!
 //! ```toml
 //! [dependencies]
@@ -29,7 +29,7 @@
 //! # fn main() { }
 //! ```
 //!
-//! And write your function using the [gateway!](macro.gateway.html) macro. See
+//! Write your function using the [gateway!](macro.gateway.html) macro. See
 //! it's documentation for more examples.
 //!
 //! ```rust
@@ -45,36 +45,30 @@
 //!
 //! # Packaging functions
 //!
-//! Lando targets AWS Lambda's Python3.6 runtime. For your code to be usable
-//! in this execution environment, you need to compile your application as
-//! a dynamic library allowing it to be embedded within CPython. The
+//! Lando targets AWS Lambda's Python3.6 runtime. The
 //! [gateway!](macro.gateway.html) macro does
 //! the all the integration for you, but cargo still needs
-//! to know what type of lib you are compiling.
+//! to know what type of `lib` you are compiling. Cargo makes it easy to produce
+//! compatible binaries.
 //!
-//! You can configure cargo to build a dynamic library with the following toml.
-//! If you're using the
-//! `gateway!` macro as above, you need to use `lambda` for the library name
-//! (see the documentation
-//! for [gateway!](macro.gateway.html) if you want to use something else).
+//! Simply add the following setting to your crate's `Cargo.toml` file.
 //!
 //! ```toml
 //! [lib]
-//! name = "lambda"
 //! crate-type = ["cdylib"]
 //! ```
 //!
-//! > 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
+//! 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
-//! `cargo build` will then produce an AWS deploy-ready `liblambda.so` binary artifact.
+//! `cargo build` will then produce an AWS deploy-ready `liblambda.so` binary artifact on linux hosts.
 //! Package this file in a zip file and it's now deployable as an AWS Lambda function!
 //! Be sure to use the the Python 3.6 execution environment with the handler
-//! configured as `liblambda.handler`.
+//! configured as `lib{your_crate_name}.handler`.
 //!
 //! Because you're building a dynamic library, other libraries that you're dynamically linking
 //! against need to also be in the Lambda execution environment. The easiest way to achive this is
-//! by building in an environment similar to Lambda's, like [this Docker
-//! container](https://hub.docker.com/r/softprops/lambda-rust/).
+//! by building in an environment similar to Lambda's. [This Docker
+//! container](https://hub.docker.com/r/softprops/lambda-rust/) faithfully reproduces the AWS Lambda Python 3.6 runtime.
 //!
 #[cfg(test)]
 #[macro_use]
