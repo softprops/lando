@@ -9,7 +9,8 @@ use serde_json;
 use serde_urlencoded;
 
 // Ours
-use request::{RequestContext, StrMap};
+use request::RequestContext;
+use strmap::StrMap;
 
 /// API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);

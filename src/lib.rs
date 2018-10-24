@@ -122,11 +122,13 @@ mod body;
 mod ext;
 pub mod request;
 mod response;
+mod strmap;
 
 pub use body::Body;
 pub use ext::{PayloadError, RequestExt};
-// GatewayRequest for benches only!
-pub use request::{GatewayRequest, StrMap};
+//  for benches only!
+pub use request::GatewayRequest;
+pub use strmap::StrMap;
 
 /// A re-exported version of `http::Request` with a type
 /// parameter for body fixed to type [lando::Body](enum.Body.html)
