@@ -76,16 +76,16 @@ pub trait RequestExt {
     /// Return pre-parsed http query string parameters, parameters
     /// provided after the `?` portion of a url,
     /// associated with the API gateway request. No query parameters
-    /// will yield an empty HashMap.
+    /// will yield an empty `StrMap`.
     fn query_string_parameters(&self) -> StrMap;
     /// Return pre-extracted path parameters, parameter provided in url placeholders
     /// `/foo/{bar}/baz/{boom}`,
     /// associated with the API gateway request. No path parameters
-    /// will yield an empty HashMap
+    /// will yield an empty `StrMap`
     fn path_parameters(&self) -> StrMap;
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
     /// associated with the API gateway request. No stage parameters
-    /// will yield an empty HashMap
+    /// will yield an empty `StrMap`
     fn stage_variables(&self) -> StrMap;
     /// Return request context data assocaited with the API gateway request
     fn request_context(&self) -> RequestContext;
