@@ -21,7 +21,10 @@ impl StrMap {
 
     /// Return an iterator over keys and values
     pub fn iter(&self) -> StrMapIter {
-        StrMapIter(self, self.0.keys())
+        StrMapIter {
+            data: self,
+            keys: self.0.keys(),
+        }
     }
 }
 
@@ -38,16 +41,19 @@ impl From<HashMap<String, String>> for StrMap {
 }
 
 /// A read only reference to `StrMap` key and value slice pairings
-pub struct StrMapIter<'a>(&'a StrMap, Keys<'a, String, String>);
+pub struct StrMapIter<'a> {
+    data: &'a StrMap,
+    keys: Keys<'a, String, String>,
+}
 
 impl<'a> Iterator for StrMapIter<'a> {
     type Item = (&'a str, &'a str);
 
     #[inline]
     fn next(&mut self) -> Option<(&'a str, &'a str)> {
-        self.1
+        self.keys
             .next()
-            .and_then(|k| self.0.get(k).map(|v| (k.as_str(), v)))
+            .and_then(|k| self.data.get(k).map(|v| (k.as_str(), v)))
     }
 }
 
