@@ -23,9 +23,10 @@
 //!
 //! Within your application's source, use lando's macros.
 //!
-//! ```rust,ignore
+//! ```
 //! #[macro_use]
 //! extern crate lando;
+//! # fn main() { }
 //! ```
 //!
 //! And write your function using the [gateway!](macro.gateway.html) macro. See
@@ -124,8 +125,8 @@ mod response;
 
 pub use body::Body;
 pub use ext::{PayloadError, RequestExt};
-// for benches only!
-pub use request::GatewayRequest;
+// GatewayRequest for benches only!
+pub use request::{GatewayRequest, StrMap};
 
 /// A re-exported version of `http::Request` with a type
 /// parameter for body fixed to type [lando::Body](enum.Body.html)
@@ -167,15 +168,24 @@ where
 /// `LambdaContext`) and are expected to return a result containing [lando::Response](struct.Response.html). The function signature should look
 /// like:
 ///
-/// ```rust,ignore
-/// fn handler(request: Request, context: LambdaContext) -> Result
+/// ```
+/// # extern crate lando;
+/// # use lando::{Request, LambdaContext, Result};
+/// fn handler(
+///   request: Request,
+///   context: LambdaContext
+/// ) -> Result {
+///   // impl...
+///   # Ok(lando::Response::new("docs".into()))
+/// }
 /// ```
 ///
 /// To use this macro, you need the following `macro_use` declaration
 ///
-/// ```rust,ignore
+/// ```
 /// #[macro_use]
 /// extern crate lando;
+/// # fn main() { }
 /// ```
 ///
 /// # Examples
@@ -205,9 +215,12 @@ where
 /// # fn main() {
 /// use lando::{LambdaContext, Request, Response, Result};
 ///
-/// fn handler(request: Request, context: LambdaContext) -> Result {
-///     println!("{:?}", request);
-///     Ok(Response::new("👍".into()))
+/// fn handler(
+///   request: Request,
+///   context: LambdaContext
+/// ) -> Result {
+///   println!("{:?}", request);
+///   Ok(Response::new("👍".into()))
 /// }
 ///
 /// gateway!(handler);

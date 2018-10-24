@@ -1,8 +1,5 @@
 //! Extension methods for `http::Request` types
 
-// Std
-use std::collections::HashMap;
-
 // Third Party
 use http::header::CONTENT_TYPE;
 use http::Request as HttpRequest;
@@ -12,17 +9,17 @@ use serde_json;
 use serde_urlencoded;
 
 // Ours
-use request::RequestContext;
+use request::{RequestContext, StrMap};
 
 /// API gateway pre-parsed http query string parameters
-pub(crate) struct QueryStringParameters(pub(crate) HashMap<String, String>);
+pub(crate) struct QueryStringParameters(pub(crate) StrMap);
 
 /// API gateway pre-extracted url path parameters
-pub(crate) struct PathParameters(pub(crate) HashMap<String, String>);
+pub(crate) struct PathParameters(pub(crate) StrMap);
 
 /// API gateway configured
 /// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
-pub(crate) struct StageVariables(pub(crate) HashMap<String, String>);
+pub(crate) struct StageVariables(pub(crate) StrMap);
 
 /// Payload deserialization errors
 #[derive(Debug, Fail)]
@@ -79,16 +76,16 @@ pub trait RequestExt {
     /// provided after the `?` portion of a url,
     /// associated with the API gateway request. No query parameters
     /// will yield an empty HashMap.
-    fn query_string_parameters(&self) -> HashMap<String, String>;
+    fn query_string_parameters(&self) -> StrMap;
     /// Return pre-extracted path parameters, parameter provided in url placeholders
     /// `/foo/{bar}/baz/{boom}`,
     /// associated with the API gateway request. No path parameters
     /// will yield an empty HashMap
-    fn path_parameters(&self) -> HashMap<String, String>;
+    fn path_parameters(&self) -> StrMap;
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
     /// associated with the API gateway request. No stage parameters
     /// will yield an empty HashMap
-    fn stage_variables(&self) -> HashMap<String, String>;
+    fn stage_variables(&self) -> StrMap;
     /// Return request context data assocaited with the API gateway request
     fn request_context(&self) -> RequestContext;
 
@@ -107,30 +104,30 @@ pub trait RequestExt {
 }
 
 impl RequestExt for HttpRequest<super::Body> {
-    fn query_string_parameters(&self) -> HashMap<String, String> {
+    fn query_string_parameters(&self) -> StrMap {
         self.extensions()
             .get::<QueryStringParameters>()
             .map(|ext| ext.0.clone())
-            .unwrap_or_else(Default::default)
+            .unwrap_or_default()
     }
-    fn path_parameters(&self) -> HashMap<String, String> {
+    fn path_parameters(&self) -> StrMap {
         self.extensions()
             .get::<PathParameters>()
             .map(|ext| ext.0.clone())
-            .unwrap_or_else(Default::default)
+            .unwrap_or_default()
     }
-    fn stage_variables(&self) -> HashMap<String, String> {
+    fn stage_variables(&self) -> StrMap {
         self.extensions()
             .get::<StageVariables>()
             .map(|ext| ext.0.clone())
-            .unwrap_or_else(Default::default)
+            .unwrap_or_default()
     }
 
     fn request_context(&self) -> RequestContext {
         self.extensions()
             .get::<RequestContext>()
             .cloned()
-            .unwrap_or_else(Default::default)
+            .unwrap_or_default()
     }
 
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
@@ -159,7 +156,7 @@ mod tests {
     use http::HeaderMap;
     use http::Request as HttpRequest;
     use std::collections::HashMap;
-    use {GatewayRequest, RequestExt};
+    use {GatewayRequest, RequestExt, StrMap};
 
     #[test]
     fn requests_have_query_string_ext() {
@@ -171,11 +168,14 @@ mod tests {
             path: "/foo".into(),
             http_method: "GET".into(),
             headers,
-            query_string_parameters: query.clone(),
+            query_string_parameters: StrMap(query.clone().into()),
             ..Default::default()
         };
         let actual = HttpRequest::from(gwr);
-        assert_eq!(actual.query_string_parameters(), query.clone());
+        assert_eq!(
+            actual.query_string_parameters(),
+            StrMap(query.clone().into())
+        );
     }
 
     #[test]
