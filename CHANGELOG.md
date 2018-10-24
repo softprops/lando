@@ -89,6 +89,8 @@ extern crate lando; // impl details are hidden
 
 Replaced many owned `String` types with `Cow`. Now deserializing and serializing request headers directly to `http::HeaderMap`
 
+* `RequestExt` methods now return `strmap::StrMap` type instead of `HashMap<String, String>`
+
 # 0.1.1
 
 * bug fix - support for reading host from "host" (lowercase) in addition to "Host"
