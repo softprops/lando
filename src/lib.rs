@@ -158,7 +158,7 @@ where
     )
 }
 
-/// Macro that exposes a Lambda function handler for AWS API gateway proxy event triggers.
+/// A macro that exposes a Lambda function handler for AWS API gateway proxy event triggers.
 ///
 /// Lambda functions accept two arguments (the event, a [lando::Request](type.Request.html), and a context, a
 /// `LambdaContext`) and are expected to return a result containing [lando::Response](struct.Response.html). The function signature should look
