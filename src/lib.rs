@@ -6,8 +6,8 @@
 //! `lando` re-exports `http::Request` and `http::Response`.
 //!
 //! AWS Lambda is a ✨ **fully managed** ✨ compute service allowing you to run
-//! code without thinking about servers. AWS will providing monitoring metrics and scaling
-//! out of the box for you.
+//! code without thinking about servers. AWS will provide [monitoring metrics](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-functions.html)
+//! and [scaling](https://docs.aws.amazon.com/lambda/latest/dg/scaling.html) out of the box for you.
 //!
 //! Lando exports Rust functions as native CPython modules making it possible to embed
 //! handlers within AWS' [Python3.6 runtime](https://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html).
