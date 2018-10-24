@@ -2,7 +2,6 @@
 
 // Std
 use std::borrow::Cow;
-use std::collections::HashMap;
 use std::fmt;
 use std::mem;
 
@@ -14,6 +13,7 @@ use serde::{de::Error as DeError, de::MapAccess, de::Visitor, Deserialize, Deser
 
 use body::Body;
 use ext::{PathParameters, QueryStringParameters, StageVariables};
+use strmap::StrMap;
 
 /// Representation of an API Gateway proxy event data
 ///
@@ -29,11 +29,11 @@ pub struct GatewayRequest<'a> {
     #[serde(deserialize_with = "deserialize_headers")]
     pub(crate) headers: HeaderMap<HeaderValue>,
     #[serde(deserialize_with = "nullable_default")]
-    pub(crate) query_string_parameters: HashMap<String, String>,
+    pub(crate) query_string_parameters: StrMap,
     #[serde(deserialize_with = "nullable_default")]
-    pub(crate) path_parameters: HashMap<String, String>,
+    pub(crate) path_parameters: StrMap,
     #[serde(deserialize_with = "nullable_default")]
-    pub(crate) stage_variables: HashMap<String, String>,
+    pub(crate) stage_variables: StrMap,
     pub(crate) body: Option<Cow<'a, str>>,
     #[serde(default)]
     pub(crate) is_base64_encoded: bool,
@@ -115,7 +115,7 @@ where
     T: Default + Deserialize<'de>,
 {
     let opt = Option::deserialize(deserializer)?;
-    Ok(opt.unwrap_or_else(Default::default))
+    Ok(opt.unwrap_or_else(T::default))
 }
 
 impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
