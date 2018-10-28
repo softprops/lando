@@ -25,7 +25,7 @@ maintenance = { status = "actively-developed" }
 pretty_assertions = "0.5"
 
 [dependencies]
-base64 = "0.9"
+base64 = "0.10"
 bytes = "0.4"
 crowbar = "0.2"
 cpython = "0.1"
