@@ -154,7 +154,9 @@ impl<'a> Serialize for Body {
             Body::Text(data) => {
                 serializer.serialize_str(::std::str::from_utf8(data).map_err(S::Error::custom)?)
             }
-            Body::Binary(data) => serializer.collect_str(&Base64Display::standard(data)),
+            Body::Binary(data) => {
+                serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD))
+            }
             Body::Empty => serializer.serialize_unit(),
         }
     }
