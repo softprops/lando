@@ -43,6 +43,19 @@
 //! # }
 //! ```
 //!
+//! Alternatively, can also just attribute a bare handler `fn` with `#[lando]`
+//!
+//! ```rust
+//! # #[macro_use] extern crate lando;
+//! #[lando]
+//! fn handler(
+//!     req: lando::Request,
+//!     ctx: lando::LambdaContext
+//! ) -> lando::Result {
+//!     Ok(lando::Response::new(().into()))
+//! }
+//! ```
+//!
 //! # Packaging functions
 //!
 //! Lando targets AWS Lambda's Python3.6 runtime. The
@@ -58,7 +71,7 @@
 //! crate-type = ["cdylib"]
 //! ```
 //!
-//! 💡 `dylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
+//! 💡 `cdylib` produces dynamic library embeddable in other languages. This and other link formats are described [here](https://doc.rust-lang.org/reference/linkage.html)
 //!
 //! `cargo build` will then produce an AWS deploy-ready `liblambda.so` binary artifact on linux hosts.
 //! Package this file in a zip file and it's now deployable as an AWS Lambda function!
@@ -99,6 +112,10 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate serde_urlencoded;
+
+/// Export #[lando] proc macro
+pub extern crate lando_attr;
+pub use lando_attr::*;
 
 // Std
 use std::error::Error as StdError;

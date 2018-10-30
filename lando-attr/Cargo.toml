@@ -1,0 +1,26 @@
+[package]
+name = "lando-attr"
+version = "0.1.1"
+authors = ["softprops <d.tangren@gmail.com>"]
+readme = "../README.md"
+license = "MIT"
+description = "Rust http interface for AWS lambda API gateway events (attr macros)"
+documentation = "https://softprops.github.io/lando"
+homepage = "https://github.com/softprops/lando"
+repository = "https://github.com/softprops/lando"
+keywords = ["serverless", "aws", "lambda", "http", "aws-lambda"]
+
+[badges]
+travis-ci = { repository = "softprops/lando" }
+coveralls = { repository = "softprops/lando" }
+maintenance = { status = "actively-developed" }
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.6"
+
+[dependencies.syn]
+version = "0.15"
+features = ["full"]
