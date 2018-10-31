@@ -43,7 +43,7 @@
 //! # }
 //! ```
 //!
-//! Alternatively, can also just attribute a bare handler `fn` with `#[lando]`
+//! Alternatively, you can also just attribute a bare handler `fn` with `#[lando]`
 //!
 //! ```rust
 //! # #[macro_use] extern crate lando;
