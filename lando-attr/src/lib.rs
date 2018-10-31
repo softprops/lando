@@ -56,10 +56,13 @@ fn attr_impl(_: TokenStream, input: TokenStream) -> TokenStream {
             // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
             // use the following when it becomes stable
     }
-    if target.decl.output == ReturnType::Default {
+    match target.decl.output {
+         ReturnType::Default => {
               // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
             // use the following when it becomes stable
             panic!("the 'gateway_fn' attribute requires a function that returns a. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident);
+        },
+        _ => ()
     }
     let target_ident = target.ident.clone();
     let target_name = target_ident.to_string();
