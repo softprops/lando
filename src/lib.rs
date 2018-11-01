@@ -94,12 +94,14 @@ pub extern crate http;
 //pub extern crate mashup;
 //#[doc(hidden)]
 //pub use mashup::*;
-extern crate paste;
+#[doc(hidden)]
+pub extern crate paste;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
 extern crate serde_urlencoded;
+
 
 // Std
 use std::error::Error as StdError;
@@ -110,6 +112,9 @@ use cpython::Python;
 #[doc(hidden)]
 pub use cpython::{PyObject, PyResult};
 pub use crowbar::LambdaContext;
+
+///
+use paste::expr as paste_expr;
 
 // Ours
 
