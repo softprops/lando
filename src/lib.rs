@@ -104,7 +104,6 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate serde_urlencoded;
 
-
 // Std
 use std::error::Error as StdError;
 use std::result::Result as StdResult;
