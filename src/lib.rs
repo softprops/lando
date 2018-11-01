@@ -90,10 +90,11 @@ extern crate failure;
 extern crate failure_derive;
 // re-export for convenience
 pub extern crate http;
-#[doc(hidden)]
-pub extern crate mashup;
-#[doc(hidden)]
-pub use mashup::*;
+//#[doc(hidden)]
+//pub extern crate mashup;
+//#[doc(hidden)]
+//pub use mashup::*;
+extern crate paste;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -272,15 +273,15 @@ macro_rules! gateway {
         // dynamic
         // see also https://www.ncameron.org/blog/untitledconcat_idents-and-macros-in-ident-position/
         // https://github.com/rust-lang/rust/issues/29599
-        mashup! {
+        /*mashup! {
             m["modulename"] = lib env!("CARGO_PKG_NAME");
             m["py2_init"] = initlib env!("CARGO_PKG_NAME");
             m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
-        }
-        m! {
-          gateway! { @module ("modulename", "py2_init", "py3_init")
+        }*/
+        paste::expr! { {
+          gateway! { @module ([<lib env!("CARGO_PKG_NAME")>],[<initlib env!("CARGO_PKG_NAME")>], [<PyInit_lib env!("CARGO_PKG_NAME")>])
                   @handlers ($($handler => $target),*) }
-        }
+        } }
     };
     ($($handler:expr => $target:expr,)*) => {
         gateway! { $($handler => $target),* }
