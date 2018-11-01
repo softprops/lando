@@ -96,7 +96,7 @@ pub extern crate http;
 //pub use mashup::*;
 extern crate paste;
 #[doc(hidden)]
-pub use paste::expr;
+pub use paste::expr as paste_expr;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -280,7 +280,7 @@ macro_rules! gateway {
             m["py2_init"] = initlib env!("CARGO_PKG_NAME");
             m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
         }*/
-        expr! {
+        $crate::paste_expr! {
           gateway! { @module ([<lib env!("CARGO_PKG_NAME")>],[<initlib env!("CARGO_PKG_NAME")>], [<PyInit_lib env!("CARGO_PKG_NAME")>])
                   @handlers ($($handler => $target),*) }
         }
