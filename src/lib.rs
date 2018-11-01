@@ -94,8 +94,7 @@ pub extern crate http;
 //pub extern crate mashup;
 //#[doc(hidden)]
 //pub use mashup::*;
-#[doc(hidden)]
-pub extern crate paste;
+extern crate paste;
 #[doc(hidden)]
 pub use paste::expr;
 extern crate serde;
