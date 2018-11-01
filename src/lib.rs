@@ -281,10 +281,10 @@ macro_rules! gateway {
             m["py2_init"] = initlib env!("CARGO_PKG_NAME");
             m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
         }*/
-        expr! { {
+        expr! {
           gateway! { @module ([<lib env!("CARGO_PKG_NAME")>],[<initlib env!("CARGO_PKG_NAME")>], [<PyInit_lib env!("CARGO_PKG_NAME")>])
                   @handlers ($($handler => $target),*) }
-        } }
+        }
     };
     ($($handler:expr => $target:expr,)*) => {
         gateway! { $($handler => $target),* }
