@@ -90,11 +90,8 @@ extern crate failure;
 extern crate failure_derive;
 // re-export for convenience
 pub extern crate http;
-//#[doc(hidden)]
-//pub extern crate mashup;
-//#[doc(hidden)]
-//pub use mashup::*;
 extern crate paste;
+// re-export for use in gateway! macro
 #[doc(hidden)]
 pub use paste::item as paste_item;
 extern crate serde;
@@ -276,15 +273,6 @@ macro_rules! gateway {
     ($($handler:expr => $target:expr),*) => {
         // conventions required by cpython crate
         // https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html
-        // in the future concat_indents! would be the way to make this
-        // dynamic
-        // see also https://www.ncameron.org/blog/untitledconcat_idents-and-macros-in-ident-position/
-        // https://github.com/rust-lang/rust/issues/29599
-        /*mashup! {
-            m["modulename"] = lib env!("CARGO_PKG_NAME");
-            m["py2_init"] = initlib env!("CARGO_PKG_NAME");
-            m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
-        }*/
         $crate::paste_item! {
           gateway! { @module ([<lib env!("CARGO_PKG_NAME")>],[<initlib env!("CARGO_PKG_NAME")>], [<PyInit_lib env!("CARGO_PKG_NAME")>])
                   @handlers ($($handler => $target),*) }
