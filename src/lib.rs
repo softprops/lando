@@ -34,13 +34,13 @@
 //!
 //! ```rust
 //! # #[macro_use] extern crate lando;
-//! # fn main() {
+//!
 //! gateway!(|_request, context| {
 //!     println!("👋 cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
 //!     Ok(lando::Response::new(()))
 //! });
-//! # }
+//! # fn main() { }
 //! ```
 //!
 //! # Packaging functions
@@ -96,7 +96,7 @@ pub extern crate http;
 //pub use mashup::*;
 extern crate paste;
 #[doc(hidden)]
-pub use paste::expr as paste_expr;
+pub use paste::item as paste_item;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -193,12 +193,17 @@ where
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
-/// # fn main() {
-/// gateway!(|request, context| {
-///     println!("{:?}", request);
-///     Ok(lando::Response::new(()))
+/// # use lando::RequestExt;
+/// gateway!(|request, _| {
+/// Ok(lando::Response::new(format!(
+///       "hello {}",
+///        request
+///            .path_parameters()
+///            .get("name")
+///            .unwrap_or_else(|| "stranger")
+///    )))
 /// });
-/// # }
+/// # fn main() { }
 /// ```
 ///
 /// You can also the provide `gateway!` macro with a function reference
@@ -211,7 +216,7 @@ where
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
-/// # fn main() {
+///
 /// use lando::{LambdaContext, Request, Response, Result};
 ///
 /// fn handler(
@@ -223,7 +228,7 @@ where
 /// }
 ///
 /// gateway!(handler);
-/// # }
+/// # fn main() { }
 /// ```
 ///
 /// # Export multiple lambda functions in one library
@@ -232,14 +237,14 @@ where
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
-/// # fn main() {
+///
 /// use lando::Response;
 ///
 /// gateway! {
 ///     "one" => |request, context| { Ok(Response::new("1")) },
 ///     "two" => |request, context| { Ok(Response::new("2")) }
-/// };
-/// # }
+/// }
+/// # fn main() { }
 /// ```
 ///
 #[macro_export]
@@ -280,7 +285,7 @@ macro_rules! gateway {
             m["py2_init"] = initlib env!("CARGO_PKG_NAME");
             m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
         }*/
-        $crate::paste_expr! {
+        $crate::paste_item! {
           gateway! { @module ([<lib env!("CARGO_PKG_NAME")>],[<initlib env!("CARGO_PKG_NAME")>], [<PyInit_lib env!("CARGO_PKG_NAME")>])
                   @handlers ($($handler => $target),*) }
         }
