@@ -54,7 +54,6 @@ pub enum PayloadError {
 ///   y: usize
 /// }
 ///
-/// # fn main() {
 /// gateway!(|request, _| {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)
@@ -70,7 +69,7 @@ pub enum PayloadError {
 ///      )
 ///   )
 /// });
-/// # }
+/// # fn main() { }
 /// ```
 pub trait RequestExt {
     /// Return pre-parsed http query string parameters, parameters
