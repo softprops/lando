@@ -34,13 +34,13 @@
 //!
 //! ```rust
 //! # #[macro_use] extern crate lando;
-//! # fn main() {
+//!
 //! gateway!(|_request, context| {
 //!     println!("👋 cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
 //!     Ok(lando::Response::new(()))
 //! });
-//! # }
+//! # fn main() { }
 //! ```
 //!
 //! Alternatively, you can also just attribute a bare handler `fn` with `#[lando]`
@@ -103,10 +103,10 @@ extern crate failure;
 extern crate failure_derive;
 // re-export for convenience
 pub extern crate http;
+extern crate paste;
+// re-export for use in gateway! macro
 #[doc(hidden)]
-pub extern crate mashup;
-#[doc(hidden)]
-pub use mashup::*;
+pub use paste::item as paste_item;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -207,12 +207,17 @@ where
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
-/// # fn main() {
-/// gateway!(|request, context| {
-///     println!("{:?}", request);
-///     Ok(lando::Response::new(()))
+/// # use lando::RequestExt;
+/// gateway!(|request, _| {
+/// Ok(lando::Response::new(format!(
+///       "hello {}",
+///        request
+///            .path_parameters()
+///            .get("name")
+///            .unwrap_or_else(|| "stranger")
+///    )))
 /// });
-/// # }
+/// # fn main() { }
 /// ```
 ///
 /// You can also the provide `gateway!` macro with a function reference
@@ -225,7 +230,7 @@ where
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
-/// # fn main() {
+///
 /// use lando::{LambdaContext, Request, Response, Result};
 ///
 /// fn handler(
@@ -237,7 +242,7 @@ where
 /// }
 ///
 /// gateway!(handler);
-/// # }
+/// # fn main() { }
 /// ```
 ///
 /// # Export multiple lambda functions in one library
@@ -246,14 +251,14 @@ where
 ///
 /// ```rust
 /// # #[macro_use] extern crate lando;
-/// # fn main() {
+///
 /// use lando::Response;
 ///
 /// gateway! {
 ///     "one" => |request, context| { Ok(Response::new("1")) },
 ///     "two" => |request, context| { Ok(Response::new("2")) }
-/// };
-/// # }
+/// }
+/// # fn main() { }
 /// ```
 ///
 #[macro_export]
@@ -285,17 +290,8 @@ macro_rules! gateway {
     ($($handler:expr => $target:expr),*) => {
         // conventions required by cpython crate
         // https://dgrunwald.github.io/rust-cpython/doc/cpython/macro.py_module_initializer.html
-        // in the future concat_indents! would be the way to make this
-        // dynamic
-        // see also https://www.ncameron.org/blog/untitledconcat_idents-and-macros-in-ident-position/
-        // https://github.com/rust-lang/rust/issues/29599
-        mashup! {
-            m["modulename"] = lib env!("CARGO_PKG_NAME");
-            m["py2_init"] = initlib env!("CARGO_PKG_NAME");
-            m["py3_init"] = PyInit_lib env!("CARGO_PKG_NAME");
-        }
-        m! {
-          gateway! { @module ("modulename", "py2_init", "py3_init")
+        $crate::paste_item! {
+          gateway! { @module ([<lib env!("CARGO_PKG_NAME")>],[<initlib env!("CARGO_PKG_NAME")>], [<PyInit_lib env!("CARGO_PKG_NAME")>])
                   @handlers ($($handler => $target),*) }
         }
     };
