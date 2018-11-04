@@ -46,23 +46,22 @@ fn attr_impl(_: TokenStream, input: TokenStream) -> TokenStream {
             // use the following when this becomes stable
             /*Span::call_site()
             .error("the 'gateway' attribute can only be used on functions")
-            .emit();*/
-        }
+            .emit();*/        }
     };
     if target.decl.inputs.len() != 2 {
         panic!(
             "the 'gateway_fn' attribute requires a function with two arguments. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident
             );
-            // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
-            // use the following when it becomes stable
+        // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
+        // use the following when it becomes stable
     }
     match target.decl.output {
-         ReturnType::Default => {
-              // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
+        ReturnType::Default => {
+            // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
             // use the following when it becomes stable
             panic!("the 'gateway_fn' attribute requires a function that returns a value. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident);
-        },
-        _ => ()
+        }
+        _ => (),
     }
     let target_ident = target.ident.clone();
     let target_name = target_ident.to_string();
