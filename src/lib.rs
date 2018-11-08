@@ -38,7 +38,7 @@
 //! gateway!(|_request, context| {
 //!     println!("👋 cloudwatch logs, this is {}", context.function_name());
 //!     // return a basic 200 response
-//!     Ok(lando::Response::new(()))
+//!     Ok(())
 //! });
 //! # fn main() { }
 //! ```
@@ -49,10 +49,10 @@
 //! # #[macro_use] extern crate lando;
 //! #[lando]
 //! fn handler(
-//!     req: lando::Request,
-//!     ctx: lando::LambdaContext
-//! ) -> lando::Result {
-//!     Ok(lando::Response::new(().into()))
+//!     _: lando::Request,
+//!     _: lando::LambdaContext
+//! ) -> lando::Result<()> {
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -149,7 +149,32 @@ pub type Request = http::Request<Body>;
 pub use http::Response;
 
 /// Result type for gateway functions
-pub type Result = StdResult<Response<Body>, Box<StdError>>;
+pub type Result<T> = StdResult<T, Box<StdError>>;
+
+/// A conversion of self into a specific type of `Response`
+pub trait IntoResponse {
+    /// Return a translation of `self` into `Response<Body>`
+    fn into_response(self) -> Response<Body>;
+}
+
+impl<B> IntoResponse for Response<B>
+where
+    B: Into<Body>,
+{
+    fn into_response(self) -> Response<Body> {
+        let (parts, body) = self.into_parts();
+        Response::from_parts(parts, body.into())
+    }
+}
+
+impl<B> IntoResponse for B
+where
+    B: Into<Body>,
+{
+    fn into_response(self) -> Response<Body> {
+        Response::new(self.into())
+    }
+}
 
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
@@ -161,14 +186,15 @@ pub fn handler<F, R>(
     py_context: PyObject,
 ) -> PyResult<PyObject>
 where
-    F: FnOnce(Request, LambdaContext) -> StdResult<Response<R>, Box<StdError>>,
-    R: Into<Body>,
+    F: FnOnce(Request, LambdaContext) -> StdResult<R, Box<StdError>>,
+    R: IntoResponse,
 {
     crowbar::handler(
         py,
         |event, ctx| {
             let apigw = serde_json::from_value::<request::GatewayRequest>(event)?;
-            func(Request::from(apigw), ctx).map(response::GatewayResponse::from)
+            func(Request::from(apigw), ctx)
+                .map(|into| response::GatewayResponse::from(into.into_response()))
         },
         py_event,
         py_context,
@@ -184,12 +210,12 @@ where
 /// ```
 /// # extern crate lando;
 /// # use lando::{Request, LambdaContext, Result};
-/// fn handler(
+/// fn handler<'a>(
 ///   request: Request,
 ///   context: LambdaContext
-/// ) -> Result {
+/// ) -> Result<&'a str> {
 ///   // impl...
-///   # Ok(lando::Response::new("docs".into()))
+///   # Ok("docs")
 /// }
 /// ```
 ///
@@ -233,12 +259,12 @@ where
 ///
 /// use lando::{LambdaContext, Request, Response, Result};
 ///
-/// fn handler(
+/// fn handler<'a>(
 ///   request: Request,
 ///   context: LambdaContext
-/// ) -> Result {
+/// ) -> Result<&'a str> {
 ///   println!("{:?}", request);
-///   Ok(Response::new("👍".into()))
+///   Ok("👍")
 /// }
 ///
 /// gateway!(handler);
