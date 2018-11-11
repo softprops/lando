@@ -1,11 +1,9 @@
 #[macro_use]
 extern crate lando;
 
-use lando::{LambdaContext, Request, Response, Result};
+use lando::{LambdaContext, Request, Result};
 
 #[lando]
-pub fn example(_: Request, _: LambdaContext) -> Result {
-    Ok(Response::new(
-        "👋  well hello there. What have we here?".into(),
-    ))
+pub fn example<'a>(_: Request, _: LambdaContext) -> Result<&'a str> {
+    Ok("👋  well hello there. What have we here?")
 }
