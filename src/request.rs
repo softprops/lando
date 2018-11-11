@@ -162,7 +162,8 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
                     }
                 }
                 _ => Body::from(()),
-            }).expect("failed to build request");
+            })
+            .expect("failed to build request");
 
         // no builder method that sets headers in batch
         mem::replace(req.headers_mut(), headers);
@@ -209,7 +210,8 @@ mod tests {
             GatewayRequest {
                 path: "/foo".into(),
                 ..Default::default()
-            }.path,
+            }
+            .path,
             "/foo"
         )
     }

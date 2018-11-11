@@ -146,7 +146,8 @@ impl RequestExt for HttpRequest<super::Body> {
                     .map_err(PayloadError::Json)
                     .map(Some),
                 _ => Ok(None),
-            }).unwrap_or_else(|| Ok(None))
+            })
+            .unwrap_or_else(|| Ok(None))
     }
 }
 
