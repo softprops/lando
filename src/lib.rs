@@ -176,6 +176,19 @@ where
     }
 }
 
+impl IntoResponse for serde_json::Value {
+    fn into_response(self) -> Response<Body> {
+        Response::builder()
+            .header(http::header::CONTENT_TYPE, "application/json")
+            .body(
+                serde_json::to_string(&self)
+                    .expect("unable to serialize serde_json::Value")
+                    .into(),
+            )
+            .expect("unable to build http::Response")
+    }
+}
+
 // wrap crowbar handler in gateway handler
 // which works with http crate types lifting them into apigw types
 #[doc(hidden)]
@@ -327,4 +340,25 @@ macro_rules! gateway {
     ($f:expr) => {
         gateway! { "handler" => $f, }
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn json_into_response() {
+        let response = json!({ "hello": "lambda"}).into_response();
+        match response.body() {
+            Body::Text(json) => assert_eq!(json, r#"{"hello":"lambda"}"#),
+            _ => panic!("invalid body"),
+        }
+        assert_eq!(
+            response
+                .headers()
+                .get(http::header::CONTENT_TYPE)
+                .map(|h| h.to_str().expect("invalid header")),
+            Some("application/json")
+        )
+    }
 }
