@@ -97,7 +97,7 @@ lambda python 3.6 env.
 
 The recommended way to get started is with the [serverless framework](https://serverless.com/framework/). A [serverless framework plugin](https://github.com/softprops/serverless-rust) exists to facilitate rapid development/deployment cycles.
 
-You can bootstramp a new deploy ready lando application by using [this serverless project template](https://github.com/softprops/serverless-lando)
+You can bootstrap a new deploy ready lando application by using [this serverless project template](https://github.com/softprops/serverless-lando)
 
 ```bash
 $ serverless install \
@@ -165,7 +165,6 @@ so the usefulness optimizing for cost is lost once you're dipped below that poin
 
 ## 🚧 planned changes
 
-* remove the need for explicit dependency on cpython
-* remove the need for awkward dependency on lambda lib name
+(none)
 
 Doug Tangren (softprops) 2018
