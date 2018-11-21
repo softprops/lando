@@ -7,11 +7,10 @@
 > [AWS lambda](https://aws.amazon.com/lambda/) [API Gateway](https://aws.amazon.com/api-gateway/) interfaces for [Rustlang](https://www.rust-lang.org) http applications.
 
 ```rust
-#[macro_use] extern crate cpython;
 #[macro_use] extern crate lando;
 
 gateway!(|_, _| {
-  Ok(lando::Response::new("👋 Hello, what have we here?"))
+  Ok("👋 Hello, what have we here?")
 });
 ```
 
@@ -23,9 +22,9 @@ Lando is a crate for **serverless** Rustlang HTTP applications.
 > The rustlang ecosystem has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
 A common property they all have is that they bundle servers that listen on ports that expose your application over network connections. A server which is then your reponsiblity to managing hosting, scaling, monitoring and operations for _in addition to_ your application code.
 
-Lando is different. Lando's focus is solely on writing applications. It shifts the responsibility of hosting servers that listen on ports that expose your application over network connections to AWS. This removes the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing servers yourself. Put more directly AWS lambda let's you run code without thinking about servers.
+Lando is different. Lando's puts the sole focus on writing applications. It shifts the responsibility of managing servers that listen on ports that expose your application over network connections to AWS. This removes the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing servers yourself. Put more directly AWS lambda let's you run code without thinking about servers.
 
-Lando is designed to work with, not against, the interfaces of strong existing ecosystems, both within Rust as well as the strong serverless ecosystems that exist outside Rust.
+Lando is designed to work with the interfaces of strong existing ecosystems, both within Rust as well as the strong serverless ecosystems that exist outside Rust.
 
 Lando's embraces the Rust community standard [http](https://crates.io/crates/http) crate as it's interface for API Gateway. Lando extends the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
 provides needed lower level machinery for easily embeding a Rust application with one of lamdba's
@@ -50,7 +49,7 @@ manages memory [very effciently](https://www.rust-lang.org/en-US/faq.html#is-rus
 and is [extremely fast](https://www.rust-lang.org/en-US/faq.html#how-fast-is-rust).
 .
 
-As a highly embeddable language, its interop story for runtimes like python's is 💖. Be mindful that lando assumes you're exposing these applications through AWS API gateway which has its own [generous pricing model](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html).
+As a highly embeddable language, its interop story for runtimes like python's is 💖. Be mindful that lando assumes you're exposing these applications through AWS API gateway which has its own [generous pricing model](https://aws.amazon.com/api-gateway/pricing/).
 
 ## 📦  install
 
@@ -62,29 +61,26 @@ name = "lambda"
 crate-type = ["cdylib"]
 
 [dependencies]
-lando = "0.1"
-cpython = "0.1"
+lando = "0.2"
 ```
 
-> 💡 The `crate-type` property informs rustc to [link](https://doc.rust-lang.org/reference/linkage.html) and produce a shared object ( `*.so` ) file allowing your rustlang application to be embedded within the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
+> 💡 The `crate-type` property informs rustc to [link](https://doc.rust-lang.org/reference/linkage.html) and produce a shared object ( `*.so` ) file allowing your rustlang application to compiled to linux native binary that can be invoked from the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
 
 ## 👩‍🏭 create
 
-Lando exports a macro named `gateway!` which in turn, injects a Rust function or
-closure to a cpython initializer making it ready for use within an aws lambda.
+Lando exports a macro named `gateway!` which in turn, exports a Rust function or
+closure to a cpython native binary extention making it ready for use within an AWS Lambda.
 
 ```rust
-#[macro_use] extern crate cpython;
 #[macro_use] extern crate lando;
 
 gateway!(|request, _context| {
   println!("{:?}", request);
-  Ok(lando::Response::new(()))
+  Ok("hello lambda")
 });
 ```
 
-This closure accepts an `http::Request` with a [lando::Body](http://lessis.me/lando/lando/enum.Body.html). This body can be dereferenced as
-a slice of bytes.
+This closure accepts an `http::Request` with a [lando::Body](http://lessis.me/lando/lando/enum.Body.html). This Body type can be dereferenced as a slice of bytes if needed.
 
 For more more in-depth details see this project's [crate documentation](http://lessis.me/lando/lando/index.html).
 
