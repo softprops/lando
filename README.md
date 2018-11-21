@@ -1,7 +1,7 @@
 # lando [![Build Status](https://travis-ci.org/softprops/lando.svg?branch=master)](https://travis-ci.org/softprops/lando) [![Coverage Status](https://coveralls.io/repos/github/softprops/lando/badge.svg)](https://coveralls.io/github/softprops/lando) [![crates.io](https://img.shields.io/crates/v/lando.svg)](https://crates.io/crates/lando) [![docs.rs](https://docs.rs/lando/badge.svg)](https://docs.rs/lando) [![Master API docs](https://img.shields.io/badge/docs-master-green.svg)](https://softprops.github.io/lando)
 
-<p style="text-align:center;">
-<img src="assets/logo.png" width="300" />
+<p align="center">
+  <img src="assets/logo.png" />
 </p>
 
 > [AWS lambda](https://aws.amazon.com/lambda/) [API Gateway](https://aws.amazon.com/api-gateway/) interfaces for [Rustlang](https://www.rust-lang.org) http applications.
