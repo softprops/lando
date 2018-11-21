@@ -24,8 +24,8 @@ use syn::{parse, ItemFn, ReturnType};
 /// use lando::{LambdaContext, Request, Response};
 ///
 /// #[lando]
-/// pub fn example(_: Request, _: LambdaContext) -> Response {
-///   Ok(Response::new(().into()))
+/// pub fn example<'a>(_: Request, _: LambdaContext) -> Response<&'a str> {
+///   Ok("hello lambda")
 /// }
 /// ```
 #[proc_macro_attribute]
@@ -41,16 +41,16 @@ fn attr_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let target: ItemFn = match parse(input.clone()) {
         Ok(f) => f,
         _ => {
-            panic!("the 'gateway_fn' attribute can only be used on functions");
+            panic!("the 'lando' attribute can only be used on functions");
             // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
             // use the following when this becomes stable
             /*Span::call_site()
-            .error("the 'gateway' attribute can only be used on functions")
+            .error("the 'lando' attribute can only be used on functions")
             .emit();*/        }
     };
     if target.decl.inputs.len() != 2 {
         panic!(
-            "the 'gateway_fn' attribute requires a function with two arguments. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident
+            "the 'lando' attribute requires a function with two arguments. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident
             );
         // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
         // use the following when it becomes stable
@@ -59,7 +59,7 @@ fn attr_impl(_: TokenStream, input: TokenStream) -> TokenStream {
         ReturnType::Default => {
             // https://doc.rust-lang.org/proc_macro/struct.Span.html#method.error
             // use the following when it becomes stable
-            panic!("the 'gateway_fn' attribute requires a function that returns a value. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident);
+            panic!("the 'lando' attribute requires a function that returns a value. expecting {}(_: lando::Request, _: lando::LambdaContext) -> lando::Result", target.ident);
         }
         _ => (),
     }
