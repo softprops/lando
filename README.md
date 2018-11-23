@@ -24,12 +24,10 @@ Most of them bundle servers that parse HTTP messages, listen on ports and manage
 
 Lando is different. Lando's sole focus is on writing **applications**. It shifts the responsibility of managing servers to AWS. This removes the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing these yourself. Put more directly AWS lambda let's you run code without thinking about servers.
 
-Lando is designed to work with the interfaces of strong existing ecosystems, both within Rust as well as the strong serverless ecosystems that exist outside Rust.
-
-Lando's embraces the Rust community standard [http](https://crates.io/crates/http) crate as it's interface for API Gateway. Lando extends the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
-provides needed lower level machinery for easily embeding a Rust application with one of lamdba's
+Lando's embraces the Rust community's [http](https://crates.io/crates/http) crate as it's interface for API Gateway. Lando extends the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
+provides needed lower level machinery for easily deploying Rust applications with one of lamdba's
 [lowest overhead runtimes](https://medium.com/@nathan.malishev/lambda-cold-starts-language-comparison-%EF%B8%8F-a4f4b5f16a62),
-Python 3.6. Lando specifically targets API Gateway triggered lambdas. Checkout crowbar for other types of [lambda triggers](https://docs.aws.amazon.com/lambda/latest/dg/invoking-lambda-function.html).
+Python 3.6. Lando targets API Gateway triggered lambdas. Checkout crowbar for other types of [lambda triggers](https://docs.aws.amazon.com/lambda/latest/dg/invoking-lambda-function.html).
 
 A *large* and *mature* ecosystem of tooling for AWS lambda already exists and works well,
 including workflow tools like [the serverless toolkit](https://serverless.com/framework/). Because these tools are likely to already exist within organizations, the barrier of introducing Rustlang into their arsenel will be much lower.
@@ -57,14 +55,13 @@ Add the following to your [cargo](https://doc.rust-lang.org/cargo/) project's `C
 
 ```toml
 [lib]
-name = "lambda"
 crate-type = ["cdylib"]
 
 [dependencies]
 lando = "0.2"
 ```
 
-> 💡 The `crate-type` property informs rustc to [link](https://doc.rust-lang.org/reference/linkage.html) and produce a shared object ( `*.so` ) file allowing your rustlang application to compiled to linux native binary that can be invoked from the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
+> 💡 The `crate-type` property [links](https://doc.rust-lang.org/reference/linkage.html) and produces a shared object ( `*.so` ) file allowing your rustlang application to compiled to linux native binary that can be invoked from the AWS python 3.6 [lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
 
 ## 👩‍🏭 create
 
