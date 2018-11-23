@@ -20,7 +20,7 @@ gateway!(|_, _| {
 Lando is a crate for **serverless** Rustlang HTTP applications.
 
 > The rustlang ecosystem has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
-Most of them bundle servers that parse HTTP messages, listen on ports and manage network connections leaving it up to you to managing hosting, scaling, monitoring and operations _in addition to_ your application code.
+Most of them bundle servers that parse HTTP messages, listen on ports and manage network connections leaving it up to you to manage hosting, scaling, monitoring and operations _in addition to_ your application code.
 
 Lando is different. Lando's sole focus is on writing **applications**. It shifts the responsibility of managing servers to AWS. This removes the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing these yourself. Put more directly AWS lambda let's you run code without thinking about servers.
 
