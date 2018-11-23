@@ -96,7 +96,7 @@ The [lambda CI docker project](https://github.com/lambci/docker-lambda) contains
 AWS lambda runtimes. This enables you to build and test your lambda projects locally environments that match with
 AWS's.
 
-### Build
+#### Build
 
 In order to invoke your function in a Lambda compatible environment you must first build it in one.
 
@@ -111,7 +111,7 @@ $ docker run --rm \
 
 This results in a native linux binary `.so` file under the`target/lambda/release` directory
 
-### Invoke
+#### Invoke
 
 You can use the `lambci/lambda:python3.6` docker images to invoke your lambda locally
 
