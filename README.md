@@ -4,7 +4,8 @@
   <img src="assets/logo.png" />
 </p>
 
-> [AWS lambda](https://aws.amazon.com/lambda/) [API Gateway](https://aws.amazon.com/api-gateway/) interfaces for [Rustlang](https://www.rust-lang.org) http applications.
+> Run [Rustlang](https://www.rust-lang.org) http applications on 
+ [AWS Lambda](https://aws.amazon.com/lambda/) with [API Gateway](https://aws.amazon.com/api-gateway/)
 
 ```rust
 #[macro_use] extern crate lando;
@@ -17,9 +18,9 @@ gateway!(|_, _| {
 
 ## 🤔 about
 
-Lando is a crate for **serverless** Rustlang HTTP applications.
+Lando is a crate for building **serverless** Rustlang HTTP applications.
 
-> The rustlang ecosystem has a number of really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
+> The rustlang ecosystem has some really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
 Most of them bundle servers that parse HTTP messages, listen on ports and manage network connections leaving it up to you to manage hosting, scaling, monitoring and operations _in addition to_ your application code.
 
 Lando is different. Lando's sole focus is on writing **applications**. It shifts the responsibility of managing servers to AWS. This removes the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing these yourself. Put more directly AWS lambda let's you run code without thinking about servers.
