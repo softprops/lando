@@ -4,7 +4,7 @@
   <img src="assets/logo.png" />
 </p>
 
-> Run [Rustlang](https://www.rust-lang.org) http applications on 
+> Run [Rustlang](https://www.rust-lang.org) http applications on
  [AWS Lambda](https://aws.amazon.com/lambda/) with [API Gateway](https://aws.amazon.com/api-gateway/)
 
 ```rust
@@ -184,7 +184,7 @@ cat example_request.json | \
     -i -e DOCKER_LAMBDA_USE_STDIN=1 \
     --rm \
     -v \
-   "$PWD/target/":/var/task lambci/lambda:python3.6 \
+   "$PWD/target/lambda/release":/var/task lambci/lambda:python3.6 \
     liblambda.handler
 ```
 
@@ -262,7 +262,7 @@ a running process ( scaling up ↕️ ) but by spawning more lambdas ( scaling o
 
 A key benefit of AWS lambda is that the _platform_ handles concurrency by spawning more instances of your function *for you*. This results in some economical advantages in
 they way you only pay for what you use. Bear in mind you are billed at intervals of 100 milliseconds,
-so the usefulness optimizing for cost is lost once you've dipped below thatpoint 
+so the usefulness optimizing for cost is lost once you've dipped below that point
 
 
 ## Examples in the wild

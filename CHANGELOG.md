@@ -87,25 +87,25 @@ extern crate lando; // impl details are hidden
 
 * reduced cost of transformations between lambda proxy types and rust native `http` crate types
 
-Replaced many owned `String` types with `Cow`. Now deserializing and serializing request headers directly to `http::HeaderMap`
+Replaced many owned `String` types with `Cow`. Now deserializing and serializing request headers and http method directly to `http::HeaderMap` and `http::Method` respectively
 
-* `RequestExt` methods now return `strmap::StrMap` type instead of `HashMap<String, String>`
+* `RequestExt` methods now return a `strmap::StrMap` type instead of `HashMap<String, String>`
 * introducing `IntoResponse` trait
 
-Handlers can now return anything that implementds IntoResponse. As a result `lando::Result` type now takes a type parameter for those types. Implementations for `lando::Response` and types that implement `Into<Body>` are provided
+Handlers can now return anything that implements `lando::IntoResponse`. As a result `lando::Result` type now takes a type parameter as a placeholder those types. Implementations for `lando::Response` and types that implement `Into<Body>` are provided
 
 * introducing `#[lando]` proc macro.
 
-You can no attribute a bare function with `#[lando]` to have it exported
+You can now attribute a bare function with `#[lando]` to have it exported
 
 ```rust
+use lando::{Request, LambdaContext, Result};
+
 #[lando]
 fn handler<'a>(_: Request, _: LambdaContext) -> Result<&'a str> {
   Ok("hello lando")
 }
 ```
-
-You can no annotate
 
 # 0.1.1
 
