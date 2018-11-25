@@ -55,6 +55,7 @@ pub struct RequestContext {
     pub request_id: String,
     pub resource_path: String,
     pub http_method: String,
+    #[serde(default)]
     pub authorizer: HashMap<String, Value>,
     pub api_id: String,
     pub identity: Identity,
