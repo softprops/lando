@@ -23,12 +23,12 @@ Lando is a crate for building **serverless** Rustlang HTTP applications.
 > The rustlang ecosystem has some really great [HTTP server crates](https://crates.io/categories/web-programming::http-server).
 Most of them bundle servers that parse HTTP messages, listen on ports and manage network connections leaving it up to you to manage hosting, scaling, monitoring and operations _in addition to_ your application code.
 
-Lando is different. Lando's sole focus is on writing **applications**. It shifts the responsibility of managing servers to AWS. This removes the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) that comes along with managing these yourself. Put more directly AWS lambda let's you run code without thinking about servers.
+Lando is different. Lando's sole focus is on writing **applications**. It shifts the [undifferentiated heavy lifting](https://www.cio.co.nz/article/466635/amazon_cto_stop_spending_money_undifferentiated_heavy_lifting_/) and responsibility of managing servers to AWS. Put more directly, AWS lambda free's you up to run code without thinking about servers.
 
-Lando's embraces the Rust community's [http](https://crates.io/crates/http) crate as it's interface for API Gateway. Lando extends the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
+Lando's embraces the Rust community's [http](https://crates.io/crates/http) crate as it's core interface for API Gateway. Lando extends the existing work of the [crowbar](https://crates.io/crates/crowbar) crate which
 provides needed lower level machinery for easily deploying Rust applications with one of lamdba's
 [lowest overhead runtimes](https://medium.com/@nathan.malishev/lambda-cold-starts-language-comparison-%EF%B8%8F-a4f4b5f16a62),
-Python 3.6. Lando targets API Gateway triggered lambdas. Checkout crowbar for other types of [lambda triggers](https://docs.aws.amazon.com/lambda/latest/dg/invoking-lambda-function.html).
+Python 3.6. Lando targets API Gateway triggered lambdas. Checkout [crowbar](https://crates.io/crates/crowbar) if you're building applications for one of Lambda's [many other triggers](https://docs.aws.amazon.com/lambda/latest/dg/invoking-lambda-function.html).
 
 A *large* and *mature* ecosystem of tooling for AWS lambda already exists and works well,
 including workflow tools like [the serverless toolkit](https://serverless.com/framework/). Because these tools are likely to already exist within organizations, the barrier of introducing Rustlang into their arsenel will be much lower.
