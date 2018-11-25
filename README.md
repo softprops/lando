@@ -262,7 +262,15 @@ a running process ( scaling up ↕️ ) but by spawning more lambdas ( scaling o
 
 A key benefit of AWS lambda is that the _platform_ handles concurrency by spawning more instances of your function *for you*. This results in some economical advantages in
 they way you only pay for what you use. Bear in mind you are billed at intervals of 100 milliseconds,
-so the usefulness optimizing for cost is lost once you're dipped below that point.
+so the usefulness optimizing for cost is lost once you've dipped below thatpoint 
+
+
+## Examples in the wild
+
+* [slack standup](https://github.com/meetup/slack-standup) slack command webhook for automating standups
+* [jirabars](https://github.com/meetup/jirabars) github webhook that fills in jira placeholder info based on branch names
+* [barbershop](https://github.com/meetup/barbershop) github webhook that deletes branches after pr
+
 
 ## 🚧 planned changes
 
