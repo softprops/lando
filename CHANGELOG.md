@@ -90,6 +90,22 @@ extern crate lando; // impl details are hidden
 Replaced many owned `String` types with `Cow`. Now deserializing and serializing request headers directly to `http::HeaderMap`
 
 * `RequestExt` methods now return `strmap::StrMap` type instead of `HashMap<String, String>`
+* introducing `IntoResponse` trait
+
+Handlers can now return anything that implementds IntoResponse. As a result `lando::Result` type now takes a type parameter for those types. Implementations for `lando::Response` and types that implement `Into<Body>` are provided
+
+* introducing `#[lando]` proc macro.
+
+You can no attribute a bare function with `#[lando]` to have it exported
+
+```rust
+#[lando]
+fn handler<'a>(_: Request, _: LambdaContext) -> Result<&'a str> {
+  Ok("hello lando")
+}
+```
+
+You can no annotate
 
 # 0.1.1
 
