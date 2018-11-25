@@ -68,7 +68,7 @@ fn attr_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let expanded = quote! {
         #target
 
-        gateway!(stringify!(#target_name) => #target_ident);
+        gateway!(#target_name => #target_ident);
     };
     expanded.into()
 }
