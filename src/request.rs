@@ -2,6 +2,7 @@
 
 // Std
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::fmt;
 use std::mem;
 
@@ -10,7 +11,9 @@ use http::header::{HeaderValue, HOST};
 use http::Request as HttpRequest;
 use http::{self, HeaderMap, Method};
 use serde::{de::Error as DeError, de::MapAccess, de::Visitor, Deserialize, Deserializer};
+use serde_json::Value;
 
+// Ours
 use body::Body;
 use ext::{PathParameters, QueryStringParameters, StageVariables};
 use strmap::StrMap;
@@ -52,7 +55,7 @@ pub struct RequestContext {
     pub request_id: String,
     pub resource_path: String,
     pub http_method: String,
-    //pub authorizer: HashMap<String, String>,
+    pub authorizer: HashMap<String, Value>,
     pub api_id: String,
     pub identity: Identity,
 }
