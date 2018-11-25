@@ -166,10 +166,9 @@ mod tests {
         query.insert("foo".to_owned(), "bar".to_owned());
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
-            http_method: "GET".into(),
             headers,
             query_string_parameters: StrMap(query.clone().into()),
-            ..Default::default()
+            ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
         assert_eq!(
@@ -193,10 +192,9 @@ mod tests {
         }
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
-            http_method: "GET".into(),
             headers,
             body: Some("foo=bar&baz=2".into()),
-            ..Default::default()
+            ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
         let payload: Option<Payload> = actual.payload().unwrap_or_else(|_| None);
@@ -219,10 +217,9 @@ mod tests {
         );
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
-            http_method: "GET".into(),
             headers,
             body: Some("foo=bar&baz=2".into()),
-            ..Default::default()
+            ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
         let mut expected = HashMap::new();
@@ -244,10 +241,9 @@ mod tests {
         }
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
-            http_method: "GET".into(),
             headers,
             body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
-            ..Default::default()
+            ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
         let payload: Option<Payload> = actual.payload().unwrap_or_else(|_| None);

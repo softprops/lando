@@ -8,7 +8,7 @@ use std::mem;
 // Third Party
 use http::header::{HeaderValue, HOST};
 use http::Request as HttpRequest;
-use http::{self, HeaderMap};
+use http::{self, HeaderMap, Method};
 use serde::{de::Error as DeError, de::MapAccess, de::Visitor, Deserialize, Deserializer};
 
 use body::Body;
@@ -25,7 +25,8 @@ use strmap::StrMap;
 pub struct GatewayRequest<'a> {
     //pub resDeserializeHeadersource: String,
     pub(crate) path: Cow<'a, str>,
-    pub(crate) http_method: Cow<'a, str>,
+    #[serde(deserialize_with = "deserialize_method")]
+    pub(crate) http_method: Method,
     #[serde(deserialize_with = "deserialize_headers")]
     pub(crate) headers: HeaderMap<HeaderValue>,
     #[serde(deserialize_with = "nullable_default")]
@@ -71,6 +72,30 @@ pub struct Identity {
     pub user: Option<String>,
     pub user_agent: Option<String>,
     pub user_arn: Option<String>,
+}
+
+fn deserialize_method<'de, D>(deserializer: D) -> Result<Method, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct MethodVisitor;
+
+    impl<'de> Visitor<'de> for MethodVisitor {
+        type Value = Method;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            write!(formatter, "a Method")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: DeError,
+        {
+            v.parse().map_err(E::custom)
+        }
+    }
+
+    deserializer.deserialize_str(MethodVisitor)
 }
 
 fn deserialize_headers<'de, D>(deserializer: D) -> Result<HeaderMap<HeaderValue>, D::Error>
@@ -134,7 +159,7 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
 
         // build an http::Request<lando::Body> from a lando::GatewayRequest
         let mut builder = HttpRequest::builder();
-        builder.method(http_method.as_ref());
+        builder.method(http_method);
         builder.uri({
             format!(
                 "https://{}{}",
@@ -184,14 +209,14 @@ mod tests {
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
         let gwr: GatewayRequest = GatewayRequest {
             path: "/foo".into(),
-            http_method: "GET".into(),
             headers,
-            ..Default::default()
+            ..GatewayRequest::default()
         };
         let expected = HttpRequest::get("https://www.rust-lang.org/foo")
             .body(())
             .unwrap();
         let actual = HttpRequest::from(gwr);
+        assert_eq!(expected.method(), actual.method());
         assert_eq!(expected.uri(), actual.uri());
         assert_eq!(expected.method(), actual.method());
     }
@@ -209,7 +234,7 @@ mod tests {
         assert_eq!(
             GatewayRequest {
                 path: "/foo".into(),
-                ..Default::default()
+                ..GatewayRequest::default()
             }
             .path,
             "/foo"
