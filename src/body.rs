@@ -12,7 +12,10 @@ use serde::ser::{Error as SerError, Serialize, Serializer};
 /// Representation of http request and response bodies as supported
 /// by API Gateway.
 ///
-/// These come in three flavors `Empty` ( to body ), `Text` ( text data ), `Binary` ( binary data ).
+/// These come in three flavors
+/// * `Empty` ( no body )
+/// * `Text` ( text data )
+/// * `Binary` ( binary data )
 ///
 /// Body types can be `Deref` and `AsRef`'d into `[u8]` types much like the `hyper` crate
 ///

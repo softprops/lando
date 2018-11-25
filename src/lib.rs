@@ -47,11 +47,13 @@
 //!
 //! ```rust
 //! # #[macro_use] extern crate lando;
+//! use lando::{Request, LambdaContext, IntoResponse, Result};
+//!
 //! #[lando]
 //! fn handler(
-//!     _: lando::Request,
-//!     _: lando::LambdaContext
-//! ) -> lando::Result<()> {
+//!     _: Request,
+//!     _: LambdaContext
+//! ) -> Result<impl IntoResponse> {
 //!     Ok(())
 //! }
 //! ```
@@ -236,11 +238,11 @@ where
 ///
 /// ```
 /// # extern crate lando;
-/// # use lando::{Request, LambdaContext, Result};
-/// fn handler<'a>(
+/// # use lando::{Request, LambdaContext, Result, IntoResponse};
+/// fn handler(
 ///   request: Request,
 ///   context: LambdaContext
-/// ) -> Result<&'a str> {
+/// ) -> Result<impl IntoResponse> {
 ///   // impl...
 ///   # Ok("docs")
 /// }
@@ -284,12 +286,12 @@ where
 /// ```rust
 /// # #[macro_use] extern crate lando;
 ///
-/// use lando::{LambdaContext, Request, Response, Result};
+/// use lando::{LambdaContext, Request, Result, IntoResponse};
 ///
-/// fn handler<'a>(
+/// fn handler(
 ///   request: Request,
 ///   context: LambdaContext
-/// ) -> Result<&'a str> {
+/// ) -> Result<impl IntoResponse> {
 ///   println!("{:?}", request);
 ///   Ok("👍")
 /// }
