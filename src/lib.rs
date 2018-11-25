@@ -153,8 +153,8 @@ pub type Result<T> = StdResult<T, Box<StdError>>;
 
 /// A conversion of self into a `Response`
 ///
-/// Implementations for `Response<B> where B: Into<Body>`
-/// and `B where B: Into<Body>` are provided
+/// Implementations for `Response<B> where B: Into<Body>`,
+/// `B where B: Into<Body>` and `serde_json::Value` are provided
 ///
 /// # example
 ///
@@ -164,7 +164,7 @@ pub type Result<T> = StdResult<T, Box<StdError>>;
 /// assert_eq!(
 ///   "hello".into_response().body(),
 ///   Response::new(Body::from("hello")).body()
-/// )
+/// );
 /// ```
 pub trait IntoResponse {
     /// Return a translation of `self` into `Response<Body>`
