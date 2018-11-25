@@ -176,18 +176,16 @@ cat example_request.json
 
 ```
 
-Invoke using `docker` providing the contexts of the mock event as stdin.
+Invoke the resulting function using `docker` providing the contexts of the mock event as stdin.
 
 ```sh
-cat example_request.json | \
-  docker run \
-    -i -e DOCKER_LAMBDA_USE_STDIN=1 \
-    --rm \
-    -v \
-   "$PWD/target/lambda/release":/var/task lambci/lambda:python3.6 \
-    liblambda.handler
+$ docker run \
+  -i -e DOCKER_LAMBDA_USE_STDIN=1 \
+  --rm \
+  -v \
+  "$PWD/target/lambda/release":/var/task lambci/lambda:python3.6 \
+  liblambda.handler < example_request.json
 ```
-
 
 ## 🚀 deploy
 

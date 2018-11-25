@@ -151,7 +151,21 @@ pub use http::Response;
 /// Result type for gateway functions
 pub type Result<T> = StdResult<T, Box<StdError>>;
 
-/// A conversion of self into a specific type of `Response`
+/// A conversion of self into a `Response`
+///
+/// Implementations for `Response<B> where B: Into<Body>`
+/// and `B where B: Into<Body>` are provided
+///
+/// # example
+///
+/// ```rust
+/// use lando::{Body, IntoResponse, Response};
+///
+/// assert_eq!(
+///   "hello".into_response().body(),
+///   Response::new(Body::from("hello")).body()
+/// )
+/// ```
 pub trait IntoResponse {
     /// Return a translation of `self` into `Response<Body>`
     fn into_response(self) -> Response<Body>;
