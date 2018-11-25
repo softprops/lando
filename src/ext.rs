@@ -197,7 +197,7 @@ mod tests {
             ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
-        let payload: Option<Payload> = actual.payload().unwrap_or_else(|_| None);
+        let payload: Option<Payload> = actual.payload().unwrap_or_default();
         assert_eq!(
             payload,
             Some(Payload {
@@ -225,7 +225,7 @@ mod tests {
         let mut expected = HashMap::new();
         expected.insert("foo".to_string(), "bar".to_string());
         expected.insert("baz".to_string(), "2".to_string());
-        let payload: Option<HashMap<String, String>> = actual.payload().unwrap_or_else(|_| None);
+        let payload: Option<HashMap<String, String>> = actual.payload().unwrap_or_default();
         assert_eq!(payload, Some(expected))
     }
 
@@ -246,7 +246,7 @@ mod tests {
             ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
-        let payload: Option<Payload> = actual.payload().unwrap_or_else(|_| None);
+        let payload: Option<Payload> = actual.payload().unwrap_or_default();
         assert_eq!(
             payload,
             Some(Payload {
