@@ -1,3 +1,7 @@
+# 0.2.1
+
+* fix version referenced in docs
+
 # 0.2.0
 
 * ease dependency declartions by re-exporting `http` crate

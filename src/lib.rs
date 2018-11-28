@@ -18,7 +18,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! lando = "0.1"
+//! lando = "0.2"
 //! ```
 //!
 //! Within your application's source, use lando's macros.
