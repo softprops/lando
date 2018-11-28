@@ -1,6 +1,6 @@
 [package]
 name = "lando-attr"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["softprops <d.tangren@gmail.com>"]
 readme = "../README.md"
 license = "MIT"
