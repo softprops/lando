@@ -86,6 +86,7 @@ Lando also supports a function attribute method for exporting a function as a la
 
 ```rust
 #[macro_use] extern crate lando;
+
 use lando::{Request, LambdaContext, IntoResponse, Result};
 
 #[lando]
