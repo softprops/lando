@@ -33,7 +33,7 @@ after
 
 ```toml
 [dependencies]
-lando = "0.1" # no longer need to add a dependency on http explicitly
+lando = "0.2" # no longer need to add a dependency on http explicitly
 ```
 
 ... in your `src/lib.rs`
@@ -75,7 +75,7 @@ after
 
 ```toml
 [dependencies]
-lando = "0.1" # no longer need to declar cpython as an explicit dependency
+lando = "0.2" # no longer need to declar cpython as an explicit dependency
 ```
 
 ... in your `src/lib.rs` file
