@@ -30,7 +30,7 @@ provides needed lower level machinery for easily deploying Rust applications wit
 [lowest overhead runtimes](https://medium.com/@nathan.malishev/lambda-cold-starts-language-comparison-%EF%B8%8F-a4f4b5f16a62),
 Python 3.6. Lando targets API Gateway triggered lambdas. Checkout [crowbar](https://crates.io/crates/crowbar) if you're building applications for one of Lambda's [many other triggers](https://docs.aws.amazon.com/lambda/latest/dg/invoking-lambda-function.html).
 
-A *large* and *mature* ecosystem of tooling for AWS lambda already exists and works well,
+A *large* and *mature* ecosystem of tooling for AWS lambda  exists and works well,
 including workflow tools like [the serverless toolkit](https://serverless.com/framework/). Because these tools are likely to already exist within organizations, the barrier of introducing Rustlang into their arsenel will be much lower.
 Lando does not intend to replace these tools but instead to work well with them 👫🏾.
 
@@ -46,7 +46,7 @@ As a systems language, Rust is designed specifically for these kinds of needs. R
 has a very [tiny runtime](https://www.rust-lang.org/en-US/faq.html#does-rust-have-a-runtime),
 manages memory [very effciently](https://www.rust-lang.org/en-US/faq.html#is-rust-garbage-collected),
 and is [extremely fast](https://www.rust-lang.org/en-US/faq.html#how-fast-is-rust).
-.
+
 
 As a highly embeddable language, its interop story for runtimes like python's is 💖. Be mindful that lando assumes you're exposing these applications through AWS API gateway which has its own [generous pricing model](https://aws.amazon.com/api-gateway/pricing/).
 
@@ -81,6 +81,21 @@ gateway!(|request, _context| {
 This closure accepts an `http::Request` with a [lando::Body](http://lessis.me/lando/lando/enum.Body.html). This Body type can be dereferenced as a slice of bytes if needed.
 
 For more more in-depth details see this project's [crate documentation](http://lessis.me/lando/lando/index.html).
+
+Lando also supports a function attribute method for exporting a function as a lambda ready fn.
+
+```rust
+#[macro_use] extern crate lando;
+use lando::{Request, LambdaContext, IntoResponse, Result};
+
+#[lando]
+fn example(
+  _: Request,
+  _: LambdaContext
+) -> Result<impl IntoResponse> {
+   Ok("hello lambda")
+}
+```
 
 ## 🔬 testing
 
