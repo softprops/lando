@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Identity","Identity assoicated with request"],["RequestContext","API Gateway request context"]]});
